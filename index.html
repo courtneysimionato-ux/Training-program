@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Courtney — Training Tracker 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=Instrument+Sans:wght@400;500&display=swap');
+:root {
+  --bg:#0F0F0F;--s1:#1A1A1A;--s2:#222;--s3:#2A2A2A;
+  --border:rgba(255,255,255,0.07);--border-md:rgba(255,255,255,0.13);
+  --text:#EDEAE4;--muted:#5A5754;--muted2:#888480;
+  --run:#4ADE80;--run-bg:rgba(74,222,128,0.1);
+  --gym:#60A5FA;--gym-bg:rgba(96,165,250,0.1);
+  --hyrox:#FB923C;--hyrox-bg:rgba(251,146,60,0.1);
+  --race:#E879F9;--race-bg:rgba(232,121,249,0.12);
+  --amber:#FBBF24;--amber-bg:rgba(251,191,36,0.08);
+  --pilates:#F472B6;--pilates-bg:rgba(244,114,182,0.1);
+  --rest-bg:rgba(255,255,255,0.025);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--text);}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.75rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:100;}
+.topbar-left h1{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:-0.02em;}
+.topbar-left p{font-size:0.68rem;color:var(--muted2);letter-spacing:0.04em;text-transform:uppercase;margin-top:1px;}
+.topbar-right{display:flex;gap:8px;align-items:center;}
+.btn{font-family:'Instrument Sans',sans-serif;font-size:0.72rem;font-weight:500;padding:6px 13px;border-radius:6px;border:1px solid var(--border-md);background:var(--s2);color:var(--muted2);cursor:pointer;transition:all 0.15s;}
+.btn:hover{background:var(--s3);color:var(--text);}
+.btn.primary{background:var(--hyrox-bg);border-color:rgba(251,146,60,0.3);color:var(--hyrox);}
+.countdowns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:1rem 1.75rem;}
+.countdown-card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center;}
+.cd-days{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:700;line-height:1;}
+.cd-label{font-size:0.63rem;color:var(--muted2);margin-top:3px;text-transform:uppercase;letter-spacing:0.05em;}
+.cd-race{font-size:0.65rem;margin-top:5px;font-weight:500;}
+.phase-tabs{display:flex;gap:3px;padding:1rem 1.75rem 0;overflow-x:auto;scrollbar-width:none;}
+.phase-tabs::-webkit-scrollbar{display:none;}
+.ptab{font-family:'Syne',sans-serif;font-size:0.65rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:7px 14px;border-radius:6px 6px 0 0;border:1px solid transparent;border-bottom:none;cursor:pointer;white-space:nowrap;color:var(--muted);background:transparent;transition:all 0.15s;}
+.ptab:hover{color:var(--muted2);}
+.ptab.active{background:var(--s1);border-color:var(--border-md);color:var(--text);}
+.content{padding:0 1.75rem 3rem;background:var(--s1);border-top:1px solid var(--border-md);}
+.phase-panel{display:none;padding-top:1.25rem;}
+.phase-panel.active{display:block;}
+.phase-info{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+.phase-info-left h2{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;letter-spacing:-0.01em;}
+.phase-info-left p{font-size:0.72rem;color:var(--muted2);margin-top:3px;}
+.phase-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.badge{font-size:0.62rem;padding:3px 9px;border-radius:20px;font-weight:500;border:1px solid;}
+.week-block{margin-bottom:1.5rem;}
+.week-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;user-select:none;}
+.week-header-left{display:flex;align-items:center;gap:10px;}
+.week-title{font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted2);}
+.week-dates{font-size:0.65rem;color:var(--muted);}
+.week-sessions{display:flex;flex-direction:column;gap:6px;}
+.week-sessions.collapsed{display:none;}
+.session-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color 0.15s;}
+.session-card:hover{border-color:var(--border-md);}
+.session-card.done{border-color:rgba(74,222,128,0.2);}
+.session-top{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;}
+.session-type-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.session-title{font-size:0.78rem;font-weight:500;flex:1;}
+.session-date{font-size:0.65rem;color:var(--muted2);}
+.session-status{font-size:0.62rem;padding:2px 7px;border-radius:10px;font-weight:500;}
+.session-status.done{background:rgba(74,222,128,0.12);color:var(--run);}
+.session-status.pending{background:var(--rest-bg);color:var(--muted);}
+.session-expand-btn{font-size:0.65rem;color:var(--muted);transition:transform 0.2s;padding:2px 4px;}
+.session-expand-btn.open{transform:rotate(180deg);}
+.session-detail{display:none;padding:0 12px 12px;border-top:1px solid var(--border);}
+.session-detail.open{display:block;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
+.detail-grid.three{grid-template-columns:1fr 1fr 1fr;}
+.field-group{display:flex;flex-direction:column;gap:4px;}
+.field-label{font-size:0.6rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;}
+.field-input{background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:6px 9px;font-size:0.75rem;color:var(--text);font-family:'Instrument Sans',sans-serif;width:100%;transition:border-color 0.15s;}
+.field-input:focus{outline:none;border-color:var(--border-md);}
+.field-input::placeholder{color:var(--muted);}
+.exercises-section{margin-top:10px;}
+.exercises-label{font-size:0.6rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;display:block;}
+.exercise-row{display:grid;grid-template-columns:1fr 80px 80px 28px;gap:5px;margin-bottom:5px;align-items:center;}
+.exercise-row input{background:var(--s3);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:0.72rem;color:var(--text);font-family:'Instrument Sans',sans-serif;width:100%;}
+.exercise-row input:focus{outline:none;border-color:var(--border-md);}
+.exercise-row input::placeholder{color:var(--muted);font-size:0.68rem;}
+.ex-del{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:4px;border-radius:3px;transition:color 0.15s;}
+.ex-del:hover{color:#f87171;}
+.add-exercise-btn{font-size:0.68rem;color:var(--muted2);background:transparent;border:1px dashed var(--border-md);border-radius:5px;padding:5px 10px;cursor:pointer;width:100%;margin-top:4px;font-family:'Instrument Sans',sans-serif;transition:all 0.15s;}
+.add-exercise-btn:hover{color:var(--text);border-color:var(--muted);}
+.notes-area{width:100%;background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:7px 9px;font-size:0.73rem;color:var(--text);font-family:'Instrument Sans',sans-serif;resize:vertical;min-height:80px;margin-top:8px;}
+.notes-area:focus{outline:none;border-color:var(--border-md);}
+.session-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.save-btn{font-family:'Instrument Sans',sans-serif;font-size:0.7rem;font-weight:500;padding:6px 14px;border-radius:5px;border:1px solid rgba(74,222,128,0.3);background:rgba(74,222,128,0.08);color:var(--run);cursor:pointer;transition:all 0.15s;}
+.save-btn:hover{background:rgba(74,222,128,0.15);}
+.mark-done-btn{font-family:'Instrument Sans',sans-serif;font-size:0.7rem;padding:6px 14px;border-radius:5px;border:1px solid var(--border);background:var(--s3);color:var(--muted2);cursor:pointer;transition:all 0.15s;}
+.mark-done-btn.undo{border-color:rgba(74,222,128,0.2);color:var(--run);background:rgba(74,222,128,0.06);}
+.fuel-box{margin-top:8px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.18);border-radius:5px;padding:7px 10px;font-size:0.7rem;color:#b8880a;line-height:1.55;}
+.fuel-box strong{display:block;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;color:#a07508;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--s1);border:1px solid var(--border-md);border-radius:12px;padding:1.5rem;width:420px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+.modal h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1rem;}
+.modal-field{margin-bottom:12px;}
+.modal-field label{font-size:0.65rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;}
+.modal-field input,.modal-field select,.modal-field textarea{width:100%;background:var(--s3);border:1px solid var(--border-md);border-radius:5px;padding:7px 10px;font-size:0.75rem;color:var(--text);font-family:'Instrument Sans',sans-serif;}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{outline:none;}
+.modal-actions{display:flex;gap:8px;margin-top:1.25rem;justify-content:flex-end;}
+.runs-log{padding:1.25rem 0;}
+.runs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+.runs-header h2{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;}
+.run-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem;}
+.run-stat{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+.run-stat-val{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;color:var(--run);line-height:1;}
+.run-stat-label{font-size:0.6rem;color:var(--muted2);margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;}
+.run-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;overflow:hidden;}
+.run-card-top{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;}
+.run-dot{width:8px;height:8px;border-radius:50%;background:var(--run);flex-shrink:0;}
+.run-name{font-size:0.78rem;font-weight:500;flex:1;}
+.run-meta{display:flex;gap:10px;align-items:center;}
+.run-chip{font-size:0.62rem;background:var(--run-bg);color:var(--run);padding:2px 7px;border-radius:10px;font-weight:500;}
+.run-date-lbl{font-size:0.63rem;color:var(--muted2);}
+.run-expand{font-size:0.65rem;color:var(--muted);transition:transform 0.2s;}
+.run-expand.open{transform:rotate(180deg);}
+.run-detail{display:none;padding:0 12px 12px;border-top:1px solid var(--border);}
+.run-detail.open{display:block;}
+.run-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0 8px;}
+.run-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.feel-btns{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
+.feel-btn{font-size:0.65rem;padding:4px 10px;border-radius:20px;border:1px solid var(--border-md);background:transparent;color:var(--muted2);cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:all 0.15s;}
+.feel-btn.selected{border-color:var(--run);background:var(--run-bg);color:var(--run);}
+.run-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.empty-runs{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:0.8rem;}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--s2);border:1px solid rgba(74,222,128,0.3);color:var(--run);font-size:0.75rem;padding:9px 16px;border-radius:8px;z-index:300;opacity:0;transform:translateY(8px);transition:all 0.25s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5);cursor:pointer;}
+select option{background:#1E1E1E;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>Courtney's Training Tracker</h1>
+    <p>Hyrox Aug 23 · Perth Half Oct 12</p>
+  </div>
+  <div class="topbar-right">
+    <button class="btn" onclick="exportData()">⬇ Export</button>
+    <button class="btn" onclick="document.getElementById('importFile').click()">⬆ Import</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="btn" onclick="openAddSession()">+ Add session</button>
+    <button class="btn primary" onclick="openReviewModal()">4-week review</button>
+  </div>
+</div>
+
+<div class="countdowns" id="countdowns"></div>
+<div class="phase-tabs" id="phaseTabs"></div>
+<div class="content" id="mainContent"></div>
+
+<!-- ADD SESSION MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h3>Add session</h3>
+    <div class="modal-field"><label>Date</label><input type="date" id="newDate"></div>
+    <div class="modal-field"><label>Type</label>
+      <select id="newType">
+        <option value="gym">Gym / Strength</option>
+        <option value="run">Run</option>
+        <option value="hyrox">Hyrox sim</option>
+        <option value="pilates">Pilates (optional)</option>
+        <option value="rest">Rest / Recovery</option>
+      </select>
+    </div>
+    <div class="modal-field"><label>Name</label><input type="text" id="newName" placeholder="e.g. Lower strength + Sled"></div>
+    <div class="modal-field"><label>Notes / plan</label><textarea id="newNotes" rows="3" placeholder="What's the plan?"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeAddModal()">Cancel</button>
+      <button class="btn primary" onclick="saveNewSession()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal">
+    <h3>4-week review</h3>
+    <div class="modal-field"><label>What went well?</label><textarea id="reviewWell" rows="2"></textarea></div>
+    <div class="modal-field"><label>What needs work?</label><textarea id="reviewImprove" rows="2"></textarea></div>
+    <div class="modal-field"><label>Adjust weights / targets for next block?</label><textarea id="reviewAdjust" rows="2"></textarea></div>
+    <div class="modal-field"><label>How is the body feeling?</label>
+      <select id="reviewFeeling">
+        <option value="">Select...</option>
+        <option>Fresh — ready to push harder</option>
+        <option>Good — maintain current load</option>
+        <option>Tired — need to back off slightly</option>
+        <option>Beat up — deload week needed</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeReviewModal()">Cancel</button>
+      <button class="btn primary" onclick="saveReview()">Save review</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOG RUN MODAL -->
+<div class="modal-overlay" id="logRunModal">
+  <div class="modal">
+    <h3>Log a run</h3>
+    <div class="modal-field"><label>Date</label><input type="date" id="runDate"></div>
+    <div class="modal-field"><label>Run name / type</label><input type="text" id="runName" placeholder="e.g. Easy zone 2, Runna tempo, Parkrun..."></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div class="modal-field"><label>Distance (km)</label><input type="text" id="runDist" placeholder="5.2"></div>
+      <div class="modal-field"><label>Time</label><input type="text" id="runTime" placeholder="32:14"></div>
+      <div class="modal-field"><label>Avg pace /km</label><input type="text" id="runPace" placeholder="6:11"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="modal-field"><label>Avg HR (bpm)</label><input type="text" id="runHR" placeholder="155"></div>
+      <div class="modal-field"><label>Elevation (m)</label><input type="text" id="runElev" placeholder="42"></div>
+    </div>
+    <div class="modal-field"><label>Route / location</label><input type="text" id="runRoute" placeholder="Where did you run?"></div>
+    <div class="modal-field"><label>Fuelling used</label><input type="text" id="runFuel" placeholder="e.g. 1 gel at 45 min, water only..."></div>
+    <div class="modal-field"><label>How did it feel?</label>
+      <div class="feel-btns" id="feelBtns">
+        <button class="feel-btn" onclick="selectFeel(this,'😴 Dead legs')">😴 Dead legs</button>
+        <button class="feel-btn" onclick="selectFeel(this,'😐 Average')">😐 Average</button>
+        <button class="feel-btn" onclick="selectFeel(this,'🙂 Good')">🙂 Good</button>
+        <button class="feel-btn" onclick="selectFeel(this,'💪 Strong')">💪 Strong</button>
+        <button class="feel-btn" onclick="selectFeel(this,'🔥 Flew')">🔥 Flew</button>
+      </div>
+    </div>
+    <div class="modal-field"><label>Notes</label><textarea id="runNotes" rows="2" placeholder="How breathing felt, conditions, what Runna said..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeLogRun()">Cancel</button>
+      <button class="btn" style="background:var(--run-bg);border-color:rgba(74,222,128,0.3);color:var(--run)" onclick="saveRun()">Save run</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STRETCH PROTOCOLS ─────────────────────────────────────────────────────
+const STRETCH = {
+  squat_strength: `STRETCH PROTOCOL (10-12 min):
+· Hip flexor lunge stretch 45s each side (squats + hip thrust load hip flexors)
+· Pigeon pose 45s each side (glutes from hip thrust + squat depth)
+· Standing hamstring stretch — foot elevated on bench 45s each side
+· Wall calf stretch — straight leg 30s each side (calf raises)
+· Lat stretch — arm overhead lean 30s each side (lat pulldown)
+· Child's pose with arms extended 45s (decompress spine after loaded squats)
+· Knees to chest lying down 30s
+
+RIGHT KNEE CARE:
+· IT band stretch — cross right leg behind left, lean left 60s
+· TFL release — lie on side, foam roller at hip/glute junction 60s right side
+· Lateral quad stretch — outside of right quad 60s
+· Figure 4 seated stretch 60s right side
+· Kneecap mobility — gently move side to side + up/down 30s`,
+
+  sled_strength: `STRETCH PROTOCOL (10-12 min):
+· Hip flexor lunge stretch 45s each side (sled push + step ups)
+· Wall calf stretch — straight + bent knee 30s each side (sled push hammers calves)
+· Quad stretch 30s each side
+· Doorway chest stretch 30s (bench press)
+· Shoulder cross-body stretch 30s each side
+· Child's pose with arms extended 45s (lower back from sled lean)
+· Knees to chest lying down 30s
+
+RIGHT KNEE CARE:
+· IT band stretch — cross right leg behind left, lean left 60s
+· TFL release — foam roller at hip/glute junction 60s right side
+· Lateral quad stretch — outside of right quad 60s
+· Figure 4 seated stretch 60s right side
+· Kneecap mobility 30s`,
+
+  lunge_strength: `STRETCH PROTOCOL (10-12 min):
+· Hip flexor lunge stretch 45s each side (walking lunges + squats)
+· Standing hamstring stretch — foot elevated 45s each side
+· Pigeon pose 45s each side (lunges load glutes deeply)
+· Wall calf stretch 30s each side
+· Lat stretch — arm overhead lean 30s each side (chin ups)
+· Child's pose with arms extended 45s
+· Knees to chest lying down 30s
+
+RIGHT KNEE CARE:
+· IT band stretch — cross right leg behind left, lean left 60s
+· TFL release — foam roller at hip/glute junction 60s right side
+· Lateral quad stretch — outside of right quad 60s
+· Figure 4 seated stretch 60s right side
+· Kneecap mobility 30s`,
+
+  lunge_row_bench: `STRETCH PROTOCOL (10-12 min):
+· Hip flexor lunge stretch 45s each side (Bulgarian lunges load hip flexors heavily)
+· Pigeon pose 45s each side (deep glute stretch after Bulgarian lunges)
+· Standing hamstring stretch 45s each side
+· Doorway chest stretch 30s (bench press)
+· Tricep overhead stretch 30s each side (dips)
+· Lat stretch — arm overhead lean 30s each side (bent over row)
+· Child's pose with arms extended 45s
+· Knees to chest lying down 30s
+
+RIGHT KNEE CARE:
+· IT band stretch — cross right leg behind left, lean left 60s
+· TFL release — foam roller at hip/glute junction 60s right side
+· Lateral quad stretch — outside of right quad 60s
+· Figure 4 seated stretch 60s right side
+· Kneecap mobility 30s`,
+
+  sled_pull_deadlift: `STRETCH PROTOCOL (10-12 min):
+· Hip flexor lunge stretch 45s each side (sled pull + deadlift hip hinge)
+· Standing hamstring stretch 45s each side (sumo deadlift)
+· Wide leg forward fold 45s (sumo stance opens inner thighs)
+· Lat stretch — arm overhead lean 30s each side (lat pulldown + sled pull)
+· Shoulder cross-body stretch 30s each side (shoulder press)
+· Child's pose with arms extended 45s (lower back from deadlift)
+· Knees to chest lying down 30s
+
+RIGHT KNEE CARE:
+· IT band stretch — cross right leg behind left, lean left 60s
+· TFL release — foam roller at hip/glute junction 60s right side
+· Lateral quad stretch — outside of right quad 60s
+· Figure 4 seated stretch 60s right side
+· Kneecap mobility 30s`,
+
+  deadlift_thruster: `STRETCH PROTOCOL (10-12 min):
+· Standing hamstring stretch 45s each side (sumo deadlift)
+· Wide leg forward fold 45s (sumo stance)
+· Hip flexor lunge stretch 45s each side (thrusters + deadlift)
+· Shoulder cross-body stretch 30s each side (thrusters overhead)
+· Tricep overhead stretch 30s each side (dips)
+· Lat stretch 30s each side (single arm DB row)
+· Child's pose with arms extended 45s
+· Knees to chest lying down 30s
+
+RIGHT KNEE CARE:
+· IT band stretch — cross right leg behind left, lean left 60s
+· TFL release — foam roller at hip/glute junction 60s right side
+· Lateral quad stretch — outside of right quad 60s
+· Figure 4 seated stretch 60s right side
+· Kneecap mobility 30s`,
+
+  sled_push_press: `STRETCH PROTOCOL (10-12 min):
+· Hip flexor lunge stretch 45s each side (sled pull hip drive)
+· Wall calf stretch 30s each side
+· Standing hamstring stretch 45s each side (sumo deadlift)
+· Wide leg forward fold 45s (sumo stance)
+· Shoulder cross-body stretch 30s each side (push press)
+· Doorway chest stretch 30s (chest press + pushups)
+· Lat stretch 30s each side (single arm row)
+· Child's pose with arms extended 45s
+· Knees to chest lying down 30s
+
+RIGHT KNEE CARE:
+· IT band stretch — cross right leg behind left, lean left 60s
+· TFL release — foam roller at hip/glute junction 60s right side
+· Lateral quad stretch — outside of right quad 60s
+· Figure 4 seated stretch 60s right side
+· Kneecap mobility 30s`,
+
+  aerobic_ergs: `STRETCH PROTOCOL (8-10 min):
+· Doorway chest stretch 30s (rowing rounds shoulders forward)
+· Thread the needle 30s each side (SkiErg thoracic rotation)
+· Wrist flexor + extensor stretch 20s each side (rowing + ski grip)
+· Neck side stretch 20s each side (SkiErg neck tension)
+· Seated forward fold 45s (hamstrings + lower back from bike + run)
+· Hip flexor lunge stretch 30s each side (bike + run)
+· Wall calf stretch 30s each side (running component)`,
+
+  speed_ergs: `STRETCH PROTOCOL (8-10 min):
+· Doorway chest stretch 30s (hard rowing rounds chest + shoulders)
+· Thread the needle 30s each side (SkiErg thoracic rotation at high intensity)
+· Lat stretch — arm overhead lean 30s each side (SkiErg lats)
+· Wrist + forearm stretch 20s each side (hard grip work)
+· Seated forward fold 45s (lower back + hamstrings from row drive)
+· Hip flexor lunge stretch 30s each side
+· Child's pose with arms extended 45s`,
+
+  running: `STRETCH PROTOCOL (10-12 min):
+· Standing quad stretch 45s each side
+· Hip flexor lunge stretch 45s each side
+· Standing hamstring stretch — foot elevated on bench 45s each side
+· Wall calf stretch — straight leg 45s each side (crucial after running)
+· Wall calf stretch — bent knee 30s each side (hits soleus, prevents achilles issues)
+· IT band stretch — cross leg lean against wall 30s each side
+· Seated glute stretch — figure 4 position 45s each side
+· Knees to chest lying down 30s
+
+RIGHT KNEE CARE:
+· IT band stretch — cross right leg behind left, lean left 60s (primary fix for lateral knee)
+· TFL release — lie on side, foam roller at hip/glute junction 60s right side
+· Lateral quad stretch — outside of right quad 60s
+· Figure 4 seated stretch 60s right side
+· Kneecap mobility — gently move side to side + up/down 30s`,
+
+  hyrox_sat: `STRETCH PROTOCOL (15 min — most important stretch of the week):
+· Hip flexor lunge stretch 60s each side (running + lunges + wall balls)
+· Pigeon pose 60s each side (running + sled + lunges load glutes deeply)
+· Standing hamstring stretch — foot elevated 60s each side
+· Wall calf stretch — straight + bent knee 45s each side (running + sled push)
+· Quad stretch 45s each side (wall balls + running)
+· Doorway chest stretch 30s (burpee push up + farmers carry)
+· Lat stretch 30s each side (SkiErg + wall ball overhead)
+· Thread the needle 30s each side (SkiErg thoracic rotation)
+· Wrist + forearm stretch 20s each side (farmers carry grip)
+· Child's pose with arms extended 60s (full back decompression)
+· Knees to chest lying down 45s
+
+RIGHT KNEE CARE:
+· IT band stretch — cross right leg behind left, lean left 60s (primary fix for lateral knee)
+· TFL release — lie on side, foam roller at hip/glute junction 60s right side
+· Lateral quad stretch — outside of right quad 60s
+· Figure 4 seated stretch 60s right side
+· Kneecap mobility 30s`,
+
+  deload_strength: `STRETCH PROTOCOL (10 min):
+· Hip flexor lunge stretch 45s each side
+· Pigeon pose 45s each side
+· Standing hamstring stretch 45s each side
+· Wall calf stretch 30s each side
+· Lat stretch 30s each side
+· Child's pose with arms extended 45s
+· Knees to chest lying down 30s
+
+RIGHT KNEE CARE:
+· IT band stretch 60s right side
+· Figure 4 seated stretch 60s right side
+· Kneecap mobility 30s`,
+
+  race_light: `STRETCH PROTOCOL (8 min — keep easy):
+· Hip flexor lunge stretch 30s each side
+· Seated forward fold 30s
+· Wall calf stretch 30s each side
+· Doorway chest stretch 30s
+· Child's pose with arms extended 30s
+· Knees to chest lying down 30s`,
+};
+
+const KNEE_ACTIVATION = `KNEE ACTIVATION (before running — right knee care):
+· Clamshells 15 reps each side (glute med activation prevents knee caving)
+· Banded lateral walks 10 steps each direction (lateral knee stability)
+· Single leg glute bridge 10 reps each side (glute strength protects IT band)
+· Leg swings front/back + side/side 10 each (hip mobility for knee tracking)`;
+
+const KNEE_FORM = `RIGHT KNEE CARE NOTE: Keep right knee tracking over second toe — do not let it cave inward. If knee feels aggravated reduce range of motion or swap Bulgarian lunges for step ups.`;
+
+const FOAM_ROLL = `FOAM ROLL PROTOCOL (right knee care — do every rest day, 15 min):
+· IT band — outside of right thigh, hip to just above knee 90s (go slow, pause on sore spots)
+· TFL — front/outside of right hip 60s (small circles on roller)
+· Glute/piriformis — seated on roller, cross right ankle over left knee 60s
+· Lateral quad — outside of right quad 60s
+· Calf — right calf full length 45s (tight calves affect knee tracking)
+· Hamstring — right hamstring 45s
+Then stretch:
+· IT band stretch 60s right side
+· Figure 4 glute stretch 60s right side
+· Standing quad stretch 45s right side`;
+
+// ── PROGRAM DATA ──────────────────────────────────────────────────────────
+function buildNotes(warmup, session, stretch, fuel, isRun, isStrength, isRest, isHyrox) {
+  let n = '';
+  if (warmup) {
+    n += 'WARM UP:\n' + warmup;
+    if (isRun || isHyrox) n += '\n\n' + KNEE_ACTIVATION;
+  }
+  if (session) n += (n ? '\n\n' : '') + 'SESSION:\n' + session;
+  if (isStrength) n += '\n\n' + KNEE_FORM;
+  if (isRest) n += '\n\n' + FOAM_ROLL;
+  if (stretch) n += '\n\nWARM DOWN:\n5 min bike/walk + stretch\n\n' + STRETCH[stretch];
+  return n.trim();
+}
+
+const DEFAULT_SESSIONS = [
+// ── WEEK 1 (Jun 1–7) ──
+{id:'w1s1',date:'2026-06-01',type:'gym',name:'W1 Mon — Strength',fuel:'🍌 Light carb snack 60–90 min before. Protein within 30 min after.',notes:buildNotes('5 min bike · 30s side plank on knee × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','3×6 Barbell back squat (rest 2 min)\n3×10 Lat pulldown (rest 2 min)\n3×8 Barbell hip thrust (rest 2 min)\n3×15 Seated calf raise (rest 90s)\n3×8 Toes to bar / knees to chest\n3×30 Plank jacks (rest 60s)','squat_strength',null,false,true,false,false),exercises:[{name:'Barbell back squat',sets:'3',reps:'6'},{name:'Lat pulldown',sets:'3',reps:'10'},{name:'Barbell hip thrust',sets:'3',reps:'8'},{name:'Seated calf raise',sets:'3',reps:'15'},{name:'Toes to bar / knees to chest',sets:'3',reps:'8'},{name:'Plank jacks',sets:'3',reps:'30'}]},
+{id:'w1s2',date:'2026-06-02',type:'gym',name:'W1 Tue — Aerobic Ergs',fuel:'💧 Water or electrolytes — easy zone 2.',notes:buildNotes(null,'RPE 3/10 — Easy zone 2 pace throughout\n5 min Row · 5 min Ski · 5 min Bike · 5 min Run × 2 rounds','aerobic_ergs',null,false,false,false,false),exercises:[{name:'Row',sets:'2',reps:'5 min easy'},{name:'SkiErg',sets:'2',reps:'5 min easy'},{name:'Bike',sets:'2',reps:'5 min easy'},{name:'Run',sets:'2',reps:'5 min easy'}]},
+{id:'w1s3',date:'2026-06-03',type:'run',name:'W1 Wed — Threshold Intervals',fuel:'🍌 Small carb snack before. Water only during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-8 — Hard but sustainable\n4 min run at threshold pace · 2 min easy zone 2 × 4 repeats, no rest','running',null,true,false,false,false),exercises:[]},
+{id:'w1s4',date:'2026-06-04',type:'gym',name:'W1 Thu — Strength',fuel:'🍌 Light snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n3×6 DB Bulgarian lunges each side (rest 2 min)\n3×12 Barbell bent over row (rest 2 min)\n3×6 Barbell bench press (rest 2 min)\n3×12 Dips (rest 90s)\n3×max effort Kettlebell holds (rest 2 min)','lunge_row_bench',null,false,true,false,false),exercises:[{name:'DB Bulgarian lunges',sets:'3',reps:'6 each side'},{name:'Barbell bent over row',sets:'3',reps:'12'},{name:'Barbell bench press',sets:'3',reps:'6'},{name:'Dips',sets:'3',reps:'12'},{name:'Kettlebell holds',sets:'3',reps:'max effort'}]},
+{id:'w1s5',date:'2026-06-05',type:'rest',name:'W1 Fri — REST',fuel:'🥗 Normal balanced meals. Hydrate well.',notes:buildNotes(null,'Rest day — walk, yoga or swim if you want to move.',null,null,false,false,true,false),exercises:[]},
+{id:'w1s6',date:'2026-06-06',type:'hyrox',name:'W1 Sat — Hyrox Session or Group Class',fuel:'⚡ Carb meal 2 hrs before. Electrolytes throughout. RPE 8-10.',notes:buildNotes('5 min easy run/walk · Mobility & drills','25 wall balls (above comp weight) · 1.5km run\n20 burpee broad jumps · 1.5km run\n30 walking lunges (above comp weight) · 1.5km run\n25 DB thrusters · 1.5km run\nOR attend Group Hyrox class','hyrox_sat',null,false,false,false,true),exercises:[{name:'Wall balls (above comp weight)',sets:'1',reps:'25'},{name:'1.5km run',sets:'1',reps:'build to race pace'},{name:'Burpee broad jumps',sets:'1',reps:'20'},{name:'1.5km run',sets:'1',reps:''},{name:'Walking lunges (above comp weight)',sets:'1',reps:'30'},{name:'1.5km run',sets:'1',reps:''},{name:'DB thrusters',sets:'1',reps:'25'},{name:'1.5km run',sets:'1',reps:''}]},
+{id:'w1s7',date:'2026-06-07',type:'run',name:'W1 Sun — 60 Min Easy Run',fuel:'💧 Electrolytes. Zone 2 only.',notes:buildNotes('Mobility & drills','RPE 3/10 — Running harder limits recovery and aerobic gains\n60 min easy run at zone 2 pace','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 2 (Jun 8–14) ──
+{id:'w2s1',date:'2026-06-08',type:'gym',name:'W2 Mon — Strength',fuel:'🍌 Carb snack before. Protein after. Sled push — arrive fuelled.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n6×10m Sled push (comp weight or above, rest 2 min)\n4×6 Barbell bench press (rest 2 min)\n4×8 DB step ups each side (rest 2 min)\n3×15 Standing calf raise (rest 90s)\n3×8 Toes to bar / knees to chest\n3×30 Plank jacks (rest 60s)','sled_strength',null,false,true,false,false),exercises:[{name:'Sled push (comp weight or above)',sets:'6',reps:'10m'},{name:'Barbell bench press',sets:'4',reps:'6'},{name:'DB step ups',sets:'4',reps:'8 each side'},{name:'Standing calf raise',sets:'3',reps:'15'},{name:'Toes to bar / knees to chest',sets:'3',reps:'8'},{name:'Plank jacks',sets:'3',reps:'30'}]},
+{id:'w2s2',date:'2026-06-09',type:'gym',name:'W2 Tue — Aerobic Ergs',fuel:'💧 Water or electrolytes — easy zone 2.',notes:buildNotes(null,'RPE 3/10 — Easy zone 2 pace\n5 min Row · 5 min Ski · 5 min Bike · 5 min Run × 2 rounds','aerobic_ergs',null,false,false,false,false),exercises:[{name:'Row',sets:'2',reps:'5 min easy'},{name:'SkiErg',sets:'2',reps:'5 min easy'},{name:'Bike',sets:'2',reps:'5 min easy'},{name:'Run',sets:'2',reps:'5 min easy'}]},
+{id:'w2s3',date:'2026-06-10',type:'run',name:'W2 Wed — Medium Pyramid Intervals',fuel:'🍌 Carb snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-8 — Hard but sustainable\nMedium Pyramid: 1-2-3-6-3-2-1 min hard with 1 min easy between\n5 × 30s strides','running',null,true,false,false,false),exercises:[]},
+{id:'w2s4',date:'2026-06-11',type:'gym',name:'W2 Thu — Strength',fuel:'🍌 Carb snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n6×10m Sled pull (above comp weight, rest 2 min)\n3×12 Barbell bent over row (rest 2 min)\n4×10 Lat pulldown (rest 2 min)\n3×8 Sumo deadlift (rest 90s)\n3×6 Strict DB shoulder press (rest 2 min)','sled_pull_deadlift',null,false,true,false,false),exercises:[{name:'Sled pull (above comp weight)',sets:'6',reps:'10m'},{name:'Barbell bent over row',sets:'3',reps:'12'},{name:'Lat pulldown',sets:'4',reps:'10'},{name:'Sumo deadlift',sets:'3',reps:'8'},{name:'Strict DB shoulder press',sets:'3',reps:'6'}]},
+{id:'w2s5',date:'2026-06-12',type:'rest',name:'W2 Fri — REST',fuel:'🥗 Normal meals. Hydrate.',notes:buildNotes(null,'Rest day — walk, yoga or swim.',null,null,false,false,true,false),exercises:[]},
+{id:'w2s6',date:'2026-06-13',type:'hyrox',name:'W2 Sat — Hyrox Session or Group Class',fuel:'⚡ Carb meal 2 hrs before. Electrolytes throughout.',notes:buildNotes('5 min easy run/walk · Mobility & drills','2 min assault bike (go hard) · 2km run × 3 rounds, no rest\nOR attend Group Hyrox class','hyrox_sat',null,false,false,false,true),exercises:[{name:'Assault bike',sets:'3',reps:'2 min hard'},{name:'2km run',sets:'3',reps:'build to race pace — no rest'}]},
+{id:'w2s7',date:'2026-06-14',type:'run',name:'W2 Sun — 70 Min Easy Run',fuel:'💧 Electrolytes. Zone 2 only.',notes:buildNotes('Mobility & drills','RPE 3/10 — Easy zone 2\n70 min easy run','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 3 (Jun 15–21) ──
+{id:'w3s1',date:'2026-06-15',type:'gym',name:'W3 Mon — Strength',fuel:'🍌 Carb snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n4×6 Barbell back squat (rest 2 min)\n4×10 Lat pulldown (rest 2 min)\n3×8 Barbell hip thrust (rest 2 min)\n3×15 Seated calf raise (rest 90s)\n3×8 Toes to bar / knees to chest\n3×30 Plank jacks (rest 60s)','squat_strength',null,false,true,false,false),exercises:[{name:'Barbell back squat',sets:'4',reps:'6'},{name:'Lat pulldown',sets:'4',reps:'10'},{name:'Barbell hip thrust',sets:'3',reps:'8'},{name:'Seated calf raise',sets:'3',reps:'15'},{name:'Toes to bar / knees to chest',sets:'3',reps:'8'},{name:'Plank jacks',sets:'3',reps:'30'}]},
+{id:'w3s2',date:'2026-06-16',type:'gym',name:'W3 Tue — Aerobic Ergs',fuel:'💧 Water/electrolytes — zone 2.',notes:buildNotes(null,'RPE 3/10 — Easy zone 2\n5 min Row · 5 min Ski · 5 min Bike · 5 min Run × 3 rounds','aerobic_ergs',null,false,false,false,false),exercises:[{name:'Row',sets:'3',reps:'5 min easy'},{name:'SkiErg',sets:'3',reps:'5 min easy'},{name:'Bike',sets:'3',reps:'5 min easy'},{name:'Run',sets:'3',reps:'5 min easy'}]},
+{id:'w3s3',date:'2026-06-17',type:'run',name:'W3 Wed — Threshold Intervals',fuel:'🍌 Carb snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-8\n4 min at threshold · 2 min easy zone 2 × 5 repeats, no rest','running',null,true,false,false,false),exercises:[]},
+{id:'w3s4',date:'2026-06-18',type:'gym',name:'W3 Thu — Strength',fuel:'🍌 Carb snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n3×6 Bulgarian lunges each side (rest 2 min)\n3×12 Barbell bent over row (rest 2 min)\n3×6 Barbell bench press (rest 2 min)\n3×12 Tricep dips (rest 90s)\n3×max effort Kettlebell holds (rest 2 min)','lunge_row_bench',null,false,true,false,false),exercises:[{name:'Bulgarian lunges',sets:'3',reps:'6 each side'},{name:'Barbell bent over row',sets:'3',reps:'12'},{name:'Barbell bench press',sets:'3',reps:'6'},{name:'Tricep dips',sets:'3',reps:'12'},{name:'Kettlebell holds',sets:'3',reps:'max effort'}]},
+{id:'w3s5',date:'2026-06-19',type:'rest',name:'W3 Fri — REST',fuel:'🥗 Normal meals.',notes:buildNotes(null,'Rest day — walk, yoga or swim.',null,null,false,false,true,false),exercises:[]},
+{id:'w3s6',date:'2026-06-20',type:'hyrox',name:'W3 Sat — Hyrox Session or Group Class',fuel:'⚡ Carb meal 2 hrs before. Electrolytes throughout.',notes:buildNotes('5 min easy run/walk · Mobility & drills','2 min assault bike (steady hard) · 2km run\n2 min sled push at comp weight · 2km run\n2 min sled pull at comp weight · 2km run\nOR attend Group Hyrox class','hyrox_sat',null,false,false,false,true),exercises:[{name:'Assault bike',sets:'1',reps:'2 min'},{name:'2km run',sets:'1',reps:''},{name:'Sled push (comp weight)',sets:'1',reps:'2 min'},{name:'2km run',sets:'1',reps:''},{name:'Sled pull (comp weight)',sets:'1',reps:'2 min'},{name:'2km run',sets:'1',reps:''}]},
+{id:'w3s7',date:'2026-06-21',type:'run',name:'W3 Sun — 80 Min Easy Run',fuel:'💧 Electrolytes. Zone 2 only.',notes:buildNotes('Mobility & drills','RPE 3/10 — Easy zone 2\n80 min easy run','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 4 DELOAD (Jun 22–28) ──
+{id:'w4s1',date:'2026-06-22',type:'gym',name:'W4 Mon — Strength (Deload)',fuel:'🍌 Light snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — Deload week, reduced volume\n3×6 DB Bulgarian lunges each side (rest 2 min)\n3×6 Chin ups weighted or assisted (rest 2 min)\n3×12 KB sumo deadlift (rest 2 min)\n3×10-20 Pushups option knees (rest 90s)\n3×1 min Plank hold (rest 90s)','deload_strength',null,false,true,false,false),exercises:[{name:'DB Bulgarian lunges',sets:'3',reps:'6 each side'},{name:'Chin ups (weighted or assisted)',sets:'3',reps:'6'},{name:'KB sumo deadlift',sets:'3',reps:'12'},{name:'Pushups (option knees)',sets:'3',reps:'10-20'},{name:'Plank hold',sets:'3',reps:'1 min'}]},
+{id:'w4s2',date:'2026-06-23',type:'rest',name:'W4 Tue — REST',fuel:'🥗 Normal meals.',notes:buildNotes(null,'Rest day — walk, yoga or swim.',null,null,false,false,true,false),exercises:[]},
+{id:'w4s3',date:'2026-06-24',type:'run',name:'W4 Wed — Medium Pyramid Intervals',fuel:'🍌 Carb snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-8 — Hard but sustainable\nMedium Pyramid: 1-2-3-6-3-2-1 min hard with 1 min easy between\n5 × 30s strides','running',null,true,false,false,false),exercises:[]},
+{id:'w4s4',date:'2026-06-25',type:'gym',name:'W4 Thu — Aerobic Ergs',fuel:'💧 Water/electrolytes — easy zone 2.',notes:buildNotes(null,'RPE 3/10 — Easy zone 2\n5 min Ski · 5 min Row · 5 min Bike · 5 min Run × 2 rounds','aerobic_ergs',null,false,false,false,false),exercises:[{name:'SkiErg',sets:'2',reps:'5 min easy'},{name:'Row',sets:'2',reps:'5 min easy'},{name:'Bike',sets:'2',reps:'5 min easy'},{name:'Run',sets:'2',reps:'5 min easy'}]},
+{id:'w4s5',date:'2026-06-26',type:'rest',name:'W4 Fri — REST',fuel:'🥗 Normal meals.',notes:buildNotes(null,'Rest day.',null,null,false,false,true,false),exercises:[]},
+{id:'w4s6',date:'2026-06-27',type:'hyrox',name:'W4 Sat — 50% Hyrox Sim',fuel:'⚡ Carb meal 2 hrs before. 1 gel at halfway. Electrolytes throughout. RPE 9/10.',notes:buildNotes('5 min easy run · Mobility & drills','500m Run · 500m SkiErg · 500m Run · 25m Sled Push · 500m Run · 25m Sled Pull · 500m Run · 40m Burpee Broad Jumps · 500m Run · 500m Row · 500m Run · 100m Farmers Carry · 500m Run · 50m Sandbag Lunges · 500m Run · 50 Wall Balls','hyrox_sat',null,false,false,false,true),exercises:[{name:'SkiErg',sets:'1',reps:'500m'},{name:'Sled push',sets:'1',reps:'25m'},{name:'Sled pull',sets:'1',reps:'25m'},{name:'Burpee broad jump',sets:'1',reps:'40m'},{name:'Row',sets:'1',reps:'500m'},{name:'Farmers carry',sets:'1',reps:'100m'},{name:'Sandbag lunges',sets:'1',reps:'50m'},{name:'Wall balls',sets:'1',reps:'50 reps'},{name:'500m runs',sets:'8',reps:'between each station'}]},
+{id:'w4s7',date:'2026-06-28',type:'run',name:'W4 Sun — 40 Min Easy Shake Out',fuel:'💧 Water only.',notes:buildNotes('Mobility & drills','RPE 3/10 — Easy zone 2\n40 min easy shake out run','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 5 (Jun 29–Jul 5) ──
+{id:'w5s1',date:'2026-06-29',type:'gym',name:'W5 Mon — Strength',fuel:'🍌 Carb snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n3×12 Barbell back squat (rest 2 min)\n3×6 Chin ups weighted or assisted (rest 2 min)\n3×10 Barbell walking lunges + DB lateral raises (superset)\n3×15 Calf raises + seated calf raises (superset)\n3×15 Alt V-snaps each side (rest 90s)','lunge_strength',null,false,true,false,false),exercises:[{name:'Barbell back squat',sets:'3',reps:'12'},{name:'Chin ups (weighted or assisted)',sets:'3',reps:'6'},{name:'Barbell walking lunges',sets:'3',reps:'10 each side'},{name:'DB lateral raises',sets:'3',reps:'10'},{name:'Calf raises + seated calf raises',sets:'3',reps:'15 each'},{name:'Alt V-snaps',sets:'3',reps:'15 each side'}]},
+{id:'w5s2',date:'2026-06-30',type:'hyrox',name:'W5 Tue — Brick Session',fuel:'⚡ Carb meal 2 hrs before. Water/electrolytes during. RPE 6-8.',notes:buildNotes('5 min easy run/walk · Mobility & drills','20m Sled Push (comp weight or above) · 1km Run × 2\n20m Sled Pull (comp weight or above) · 1km Run × 2\n25 Wall Balls (comp weight or above) · 1km Run','hyrox_sat',null,false,false,false,true),exercises:[{name:'Sled push (comp weight+)',sets:'2',reps:'20m'},{name:'1km run',sets:'2',reps:''},{name:'Sled pull (comp weight+)',sets:'2',reps:'20m'},{name:'1km run',sets:'2',reps:''},{name:'Wall balls (comp weight+)',sets:'1',reps:'25'},{name:'1km run',sets:'1',reps:''}]},
+{id:'w5s3',date:'2026-07-01',type:'run',name:'W5 Wed — Threshold Intervals',fuel:'🍌 Carb snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-8\n6 min at threshold · 3 min easy zone 2 × 3 repeats, no rest','running',null,true,false,false,false),exercises:[]},
+{id:'w5s4',date:'2026-07-02',type:'gym',name:'W5 Thu — Strength',fuel:'🍌 Carb snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n3×12 Sumo deadlift (rest 2 min)\n3×10 Single arm DB row (rest 2 min)\n3×10 Barbell thrusters (rest 2 min)\n3×10 Dips + bicep curls (superset)\n3×max effort Kettlebell holds (rest 2 min)','deadlift_thruster',null,false,true,false,false),exercises:[{name:'Sumo deadlift',sets:'3',reps:'12'},{name:'Single arm DB row',sets:'3',reps:'10'},{name:'Barbell thrusters',sets:'3',reps:'10'},{name:'Dips + bicep curls',sets:'3',reps:'10 each'},{name:'Kettlebell holds',sets:'3',reps:'max effort'}]},
+{id:'w5s5',date:'2026-07-03',type:'rest',name:'W5 Fri — REST',fuel:'🥗 Normal meals.',notes:buildNotes(null,'Rest day.',null,null,false,false,true,false),exercises:[]},
+{id:'w5s6',date:'2026-07-04',type:'hyrox',name:'W5 Sat — Hyrox Session or Group Class',fuel:'⚡ Carb meal before. Electrolytes throughout. Cut off 40 min.',notes:buildNotes('5 min easy run · Mobility & drills','30-25-20-15-10-5: Row cals · Burpees · Lunges (×2)\n400m run at end of each round · Cut off 40 min\nOR attend Group Hyrox class','hyrox_sat',null,false,false,false,true),exercises:[{name:'Row cals',sets:'6',reps:'30/25/20/15/10/5'},{name:'Burpees',sets:'6',reps:'30/25/20/15/10/5'},{name:'Lunges ×2',sets:'6',reps:'30/25/20/15/10/5'},{name:'400m run',sets:'6',reps:'end of each round'}]},
+{id:'w5s7',date:'2026-07-05',type:'run',name:'W5 Sun — 90 Min Easy Run',fuel:'💧 Electrolytes. 1 gel at 60 min.',notes:buildNotes('Mobility & drills','RPE 3/10 — Easy zone 2\n90 min easy run','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 6 (Jul 6–12) ──
+{id:'w6s1',date:'2026-07-06',type:'gym',name:'W6 Mon — Strength',fuel:'🍌 Carb snack before. Protein after. Sled push — arrive fuelled.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n4×20m Sled push (rest 2 min)\n3×12 Lat pulldown (rest 2 min)\n3×10 B-stance hip thrust each side (rest 90s)\n3×15 Calf raises + seated calf raises (superset)\n3×15 Alt V-snaps each side (rest 90s)','sled_strength',null,false,true,false,false),exercises:[{name:'Sled push',sets:'4',reps:'20m'},{name:'Lat pulldown',sets:'3',reps:'12'},{name:'B-stance hip thrust',sets:'3',reps:'10 each side'},{name:'Calf raises + seated calf raises',sets:'3',reps:'15 each'},{name:'Alt V-snaps',sets:'3',reps:'15 each side'}]},
+{id:'w6s2',date:'2026-07-07',type:'hyrox',name:'W6 Tue — Brick Session',fuel:'⚡ Carb meal 2 hrs before. Electrolytes during. RPE 6-8.',notes:buildNotes('5 min easy run/walk · Mobility & drills','25 Wall Balls (comp weight or above) · 1km Run × 2\n15 Burpee Broad Jumps · 1km Run × 2\n30 Walking Lunges (comp weight or above) · 1km Run','hyrox_sat',null,false,false,false,true),exercises:[{name:'Wall balls (comp weight+)',sets:'2',reps:'25'},{name:'1km run',sets:'2',reps:''},{name:'Burpee broad jumps',sets:'2',reps:'15'},{name:'1km run',sets:'2',reps:''},{name:'Walking lunges (comp weight+)',sets:'1',reps:'30'},{name:'1km run',sets:'1',reps:''}]},
+{id:'w6s3',date:'2026-07-08',type:'run',name:'W6 Wed — Intervals',fuel:'🍌 Carb snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-9 — As hard as you can maintain same pace\n4 × 1.5km · 2 min rest between reps\n5 × 60s hill repeats (walk down = recovery)','running',null,true,false,false,false),exercises:[]},
+{id:'w6s4',date:'2026-07-09',type:'gym',name:'W6 Thu — Strength',fuel:'🍌 Carb snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n4×20m Sled pull (comp weight or above, rest 2 min)\n3×12 Sumo deadlift (rest 2 min)\n3×10 Barbell push press (rest 2 min)\n3×10 Single arm DB row (rest 2 min)\n3×10 DB chest press + pushups (superset)','sled_push_press',null,false,true,false,false),exercises:[{name:'Sled pull (comp weight or above)',sets:'4',reps:'20m'},{name:'Sumo deadlift',sets:'3',reps:'12'},{name:'Barbell push press',sets:'3',reps:'10'},{name:'Single arm DB row',sets:'3',reps:'10 each'},{name:'DB chest press + pushups',sets:'3',reps:'10 each'}]},
+{id:'w6s5',date:'2026-07-10',type:'rest',name:'W6 Fri — REST',fuel:'🥗 Normal meals.',notes:buildNotes(null,'Rest day.',null,null,false,false,true,false),exercises:[]},
+{id:'w6s6',date:'2026-07-11',type:'hyrox',name:'W6 Sat — Hyrox Session or Group Class',fuel:'⚡ Carb meal before. Electrolytes throughout. Cut off 40 min.',notes:buildNotes('5 min easy run · Mobility & drills','1500m Run BUY IN\n30-25-20-15-10-5: Ski cals · Burpees · Farmers Carry (×2)\n400m run at end of each round · Cut off 40 min\nOR attend Group Hyrox class','hyrox_sat',null,false,false,false,true),exercises:[{name:'1500m run BUY IN',sets:'1',reps:''},{name:'Ski cals',sets:'6',reps:'30/25/20/15/10/5'},{name:'Burpees',sets:'6',reps:'30/25/20/15/10/5'},{name:'Farmers carry ×2',sets:'6',reps:'30/25/20/15/10/5'},{name:'400m run',sets:'6',reps:'end of each round'}]},
+{id:'w6s7',date:'2026-07-12',type:'run',name:'W6 Sun — 90 Min Easy Run',fuel:'💧 Electrolytes. 1 gel at 60 min.',notes:buildNotes('Mobility & drills','RPE 3/10 — Easy zone 2\n90 min easy run','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 7 (Jul 13–19) ──
+{id:'w7s1',date:'2026-07-13',type:'gym',name:'W7 Mon — Strength',fuel:'🍌 Carb snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n4×12 Barbell back squat (rest 2 min)\n4×6 Chin ups weighted or assisted (rest 2 min)\n3×10 Barbell walking lunges + DB lateral raises (superset)\n3×15 Calf raises + seated calf raises (superset)\n3×15 Alt V-snaps each side (rest 90s)','lunge_strength',null,false,true,false,false),exercises:[{name:'Barbell back squat',sets:'4',reps:'12'},{name:'Chin ups (weighted or assisted)',sets:'4',reps:'6'},{name:'Barbell walking lunges',sets:'3',reps:'10 each side'},{name:'DB lateral raises',sets:'3',reps:'10'},{name:'Calf raises + seated calf raises',sets:'3',reps:'15 each'},{name:'Alt V-snaps',sets:'3',reps:'15 each side'}]},
+{id:'w7s2',date:'2026-07-14',type:'hyrox',name:'W7 Tue — Brick Session',fuel:'⚡ Carb meal 2 hrs before. Electrolytes. RPE 6-8.',notes:buildNotes('5 min easy run/walk · Mobility & drills','2 min assault bike (hard effort) · 2km run × 4','hyrox_sat',null,false,false,false,true),exercises:[{name:'Assault bike',sets:'4',reps:'2 min hard'},{name:'2km run',sets:'4',reps:'build to race pace'}]},
+{id:'w7s3',date:'2026-07-15',type:'run',name:'W7 Wed — Intervals',fuel:'🍌 Carb snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-9 — As hard as you can maintain same pace\n6 × 1km · 2 min rest between reps\n5 × 60s hill repeats (walk down = recovery)','running',null,true,false,false,false),exercises:[]},
+{id:'w7s4',date:'2026-07-16',type:'gym',name:'W7 Thu — Strength',fuel:'🍌 Carb snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n3×12 Sumo deadlift (rest 2 min)\n3×10 Single arm DB row (rest 2 min)\n3×10 Barbell thrusters (rest 2 min)\n3×10 Dips (option box) + bicep curls (superset)\n3×max effort Kettlebell holds (rest 2 min)','deadlift_thruster',null,false,true,false,false),exercises:[{name:'Sumo deadlift',sets:'3',reps:'12'},{name:'Single arm DB row',sets:'3',reps:'10'},{name:'Barbell thrusters',sets:'3',reps:'10'},{name:'Dips (option box) + bicep curls',sets:'3',reps:'10 each'},{name:'Kettlebell holds',sets:'3',reps:'max effort'}]},
+{id:'w7s5',date:'2026-07-17',type:'rest',name:'W7 Fri — REST',fuel:'🥗 Normal meals.',notes:buildNotes(null,'Rest day.',null,null,false,false,true,false),exercises:[]},
+{id:'w7s6',date:'2026-07-18',type:'hyrox',name:'W7 Sat — Hyrox Session or Group Class',fuel:'⚡ Carb meal before. Electrolytes throughout.',notes:buildNotes('5 min easy run · Mobility & drills','1500m BUY IN\n500m Ski · 15 Burpee Broad Jumps · 500m Ski × 3, rest 60s between sets\n500m Row · 30 Walking Lunges (comp weight) · 500m Row × 3, rest 60s\n1500m BUY OUT\nOR attend Group Hyrox class','hyrox_sat',null,false,false,false,true),exercises:[{name:'1500m run BUY IN',sets:'1',reps:''},{name:'500m ski · 15 BBJ · 500m ski',sets:'3',reps:'rest 60s'},{name:'500m row · 30 lunges · 500m row',sets:'3',reps:'rest 60s'},{name:'1500m run BUY OUT',sets:'1',reps:''}]},
+{id:'w7s7',date:'2026-07-19',type:'run',name:'W7 Sun — 90 Min Easy Run',fuel:'💧 Electrolytes. 1 gel at 60 min.',notes:buildNotes('Mobility & drills','RPE 3/10 — Easy zone 2\n90 min easy run','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 8 DELOAD (Jul 20–26) ──
+{id:'w8s1',date:'2026-07-20',type:'gym',name:'W8 Mon — Strength (Deload)',fuel:'🍌 Light snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — Deload week, reduced volume\n3×12 DB Bulgarian lunges each side (rest 2 min)\n3×8 Chin ups weighted or assisted (rest 2 min)\n3×12 Deadlifts (rest 2 min)\n3×10-20 Pushups option knees (rest 2 min)\n3×1 min Plank hold (rest 90s)','deload_strength',null,false,true,false,false),exercises:[{name:'DB Bulgarian lunges',sets:'3',reps:'12 each side'},{name:'Chin ups (weighted or assisted)',sets:'3',reps:'8'},{name:'Deadlifts',sets:'3',reps:'12'},{name:'Pushups (option knees)',sets:'3',reps:'10-20'},{name:'Plank hold',sets:'3',reps:'1 min'}]},
+{id:'w8s2',date:'2026-07-21',type:'rest',name:'W8 Tue — REST',fuel:'🥗 Normal meals.',notes:buildNotes(null,'Rest day — walk, yoga or swim.',null,null,false,false,true,false),exercises:[]},
+{id:'w8s3',date:'2026-07-22',type:'run',name:'W8 Wed — Intervals',fuel:'🍌 Carb snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-9 — As hard as you can maintain same pace\n8 × 800m above race pace · 2 min rest between reps','running',null,true,false,false,false),exercises:[]},
+{id:'w8s4',date:'2026-07-23',type:'run',name:'W8 Thu — 40 Min Easy Run',fuel:'💧 Water only.',notes:buildNotes('5 min walk · Mobility & drills','RPE 3/10 — Easy zone 2\n40 min easy run','running',null,true,false,false,false),exercises:[]},
+{id:'w8s5',date:'2026-07-24',type:'rest',name:'W8 Fri — REST',fuel:'🥗 Normal meals.',notes:buildNotes(null,'Rest day.',null,null,false,false,true,false),exercises:[]},
+{id:'w8s6',date:'2026-07-25',type:'hyrox',name:'W8 Sat — 70% Hyrox Sim',fuel:'⚡ Carb meal 2 hrs before. 1 gel at halfway. Electrolytes throughout. RPE 9/10.',notes:buildNotes('5 min easy run · Mobility & drills','700m Run · 70m SkiErg · 700m Run · 40m Sled Push · 700m Run · 40m Sled Pull · 700m Run · 60m Burpee Broad Jump · 700m Run · 700m Row · 700m Run · 150m Farmers Carry · 700m Run · 70m Sandbag Lunges · 700m Run · 70 Wall Balls','hyrox_sat',null,false,false,false,true),exercises:[{name:'SkiErg',sets:'1',reps:'70m'},{name:'Sled push',sets:'1',reps:'40m'},{name:'Sled pull',sets:'1',reps:'40m'},{name:'Burpee broad jump',sets:'1',reps:'60m'},{name:'Row',sets:'1',reps:'700m'},{name:'Farmers carry',sets:'1',reps:'150m'},{name:'Sandbag lunges',sets:'1',reps:'70m'},{name:'Wall balls',sets:'1',reps:'70 reps'},{name:'700m runs',sets:'8',reps:'between each station'}]},
+{id:'w8s7',date:'2026-07-26',type:'run',name:'W8 Sun — 40 Min Easy Shake Out',fuel:'💧 Water only.',notes:buildNotes('Mobility & drills','RPE 3/10 — Easy zone 2\n40 min easy shake out run','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 9 (Jul 27–Aug 2) ──
+{id:'w9s1',date:'2026-07-27',type:'gym',name:'W9 Mon — Strength',fuel:'🍌 Carb snack before. Protein after. Big session — arrive fuelled.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n4×20m Sled push (comp weight or above, rest 2 min)\n3×15 Barbell hip thrust + toes to bar / KTC (superset)\n3×15 Barbell bench press (rest 90s)\n3×12 DB walking lunges each side (rest 90s)\n3×100m KB farmers carry (rest 2 min)','sled_strength',null,false,true,false,false),exercises:[{name:'Sled push (comp weight or above)',sets:'4',reps:'20m'},{name:'Barbell hip thrust + toes to bar / KTC',sets:'3',reps:'15 each'},{name:'Barbell bench press',sets:'3',reps:'15'},{name:'DB walking lunges',sets:'3',reps:'12 each side'},{name:'KB farmers carry',sets:'3',reps:'100m'}]},
+{id:'w9s2',date:'2026-07-28',type:'gym',name:'W9 Tue AM — Speed Ergs',fuel:'💧 Electrolytes. Hard on the efforts.',notes:buildNotes('5 min easy ski · 5 min easy row · Mobility & drills','RPE 7-8 — Hold same pace for each hard rep\n200m Ski HARD · 100m easy · 200m Ski HARD · 100m easy × 3 sets, rest 90s\n200m Row HARD · 100m easy · 200m Row HARD · 100m easy × 3 sets, rest 90s','speed_ergs',null,false,false,false,false),exercises:[{name:'SkiErg: 200m hard / 100m easy / 200m hard / 100m easy',sets:'3',reps:'rest 90s between sets'},{name:'Row: 200m hard / 100m easy / 200m hard / 100m easy',sets:'3',reps:'rest 90s between sets'}]},
+{id:'w9s3',date:'2026-07-28',type:'run',name:'W9 Tue PM — Optional Easy Run',fuel:'💧 Water only.',notes:buildNotes('Mobility & drills','RPE 3/10 — Optional, easy zone 2 only\n30 min easy run','running',null,true,false,false,false),exercises:[]},
+{id:'w9s4',date:'2026-07-29',type:'run',name:'W9 Wed — Intervals',fuel:'🍌 Carb snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-9 — As hard as you can maintain same pace\n10 × 400m above race pace · 90s rest between reps\n4 × 200m (walk back to start = recovery)','running',null,true,false,false,false),exercises:[]},
+{id:'w9s5',date:'2026-07-30',type:'gym',name:'W9 Thu — Strength',fuel:'🍌 Carb snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n4×20m Sled pull (comp weight or above, rest 2 min)\n3×12 Single leg deadlift each side (rest 2 min)\n3×15 Push press (rest 90s)\n3×15 Calf raises + seated calf raises (superset)\n3×20 DB renegade rows (rest 90s)','sled_pull_deadlift',null,false,true,false,false),exercises:[{name:'Sled pull (comp weight or above)',sets:'4',reps:'20m'},{name:'Single leg deadlift',sets:'3',reps:'12 each side'},{name:'Push press',sets:'3',reps:'15'},{name:'Calf raises + seated calf raises',sets:'3',reps:'15 each'},{name:'DB renegade rows',sets:'3',reps:'20'}]},
+{id:'w9s6',date:'2026-07-31',type:'rest',name:'W9 Fri — REST',fuel:'🥗 Normal meals.',notes:buildNotes(null,'Rest day.',null,null,false,false,true,false),exercises:[]},
+{id:'w9s7',date:'2026-08-01',type:'hyrox',name:'W9 Sat — Hyrox Session or Group Class',fuel:'⚡ Carb meal 2 hrs before. Electrolytes throughout. RPE 8-10.',notes:buildNotes('5 min easy run · Mobility & drills','300m Run · 20m Sled Push (comp weight) · 300m Run × 2, rest 90s\n300m Run · 20m Sled Pull (comp weight) · 300m Run × 2, rest 90s\n300m Run · 15 Burpee Broad Jumps · 300m Run × 2, rest 90s\n300m Run · 25 Wall Balls · 300m Run × 2, rest 90s\nOR attend Group Hyrox class','hyrox_sat',null,false,false,false,true),exercises:[{name:'Sled push (comp) + 300m runs',sets:'2',reps:'20m · rest 90s'},{name:'Sled pull (comp) + 300m runs',sets:'2',reps:'20m · rest 90s'},{name:'Burpee broad jumps + 300m runs',sets:'2',reps:'15 · rest 90s'},{name:'Wall balls + 300m runs',sets:'2',reps:'25 · rest 90s'}]},
+{id:'w9s8',date:'2026-08-02',type:'run',name:'W9 Sun — 90 Min Easy Run',fuel:'💧 Electrolytes. 1 gel at 60 min.',notes:buildNotes('Mobility & drills','RPE 3/10 — Easy zone 2\n90 min easy run','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 10 (Aug 3–9) ──
+{id:'w10s1',date:'2026-08-03',type:'gym',name:'W10 Mon — Strength',fuel:'🍌 Carb snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n3×15 Barbell back squat (rest 2 min)\n3×6-8 Chin ups weighted or assisted (rest 90s)\n3×10 Barbell step ups each side (rest 90s)\n3×15 DB push press (rest 2 min)\n3×15 Calf raises + seated calf raises (superset)','squat_strength',null,false,true,false,false),exercises:[{name:'Barbell back squat',sets:'3',reps:'15'},{name:'Chin ups (weighted or assisted)',sets:'3',reps:'6-8'},{name:'Barbell step ups',sets:'3',reps:'10 each side'},{name:'DB push press',sets:'3',reps:'15'},{name:'Calf raises + seated calf raises',sets:'3',reps:'15 each'}]},
+{id:'w10s2',date:'2026-08-04',type:'gym',name:'W10 Tue AM — Speed Ergs',fuel:'💧 Electrolytes. Hard on the efforts.',notes:buildNotes('5 min easy ski · 5 min easy row · Mobility & drills','RPE 7-8 — Hold same pace for each hard rep\n200m Ski HARD · 100m easy · 200m Ski HARD · 100m easy × 3 sets, rest 90s\n200m Row HARD · 100m easy · 200m Row HARD · 100m easy × 3 sets, rest 90s','speed_ergs',null,false,false,false,false),exercises:[{name:'SkiErg: 200m hard / 100m easy / 200m hard / 100m easy',sets:'3',reps:'rest 90s between sets'},{name:'Row: 200m hard / 100m easy / 200m hard / 100m easy',sets:'3',reps:'rest 90s between sets'}]},
+{id:'w10s3',date:'2026-08-04',type:'run',name:'W10 Tue PM — Optional Easy Run',fuel:'💧 Water only.',notes:buildNotes('Mobility & drills','RPE 3/10 — Optional, easy zone 2\n30 min easy run','running',null,true,false,false,false),exercises:[]},
+{id:'w10s4',date:'2026-08-05',type:'run',name:'W10 Wed — Intervals',fuel:'🍌 Carb snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-9 — As hard as you can maintain same pace\n10 × 400m above race pace · 90s rest between reps','running',null,true,false,false,false),exercises:[]},
+{id:'w10s5',date:'2026-08-06',type:'gym',name:'W10 Thu — Strength',fuel:'🍌 Carb snack before. Protein after. Wall balls included.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — 2 reps in reserve\n3×15 Barbell bench press (rest 2 min)\n3×15 Barbell hip thrust + toes to bar / KTC (superset)\n3×12 DB walking lunges each side (rest 90s)\n3×20 DB renegade rows (rest 2 min)\n3×25 Wall balls (above comp weight, rest 90s)','sled_strength',null,false,true,false,false),exercises:[{name:'Barbell bench press',sets:'3',reps:'15'},{name:'Barbell hip thrust + toes to bar / KTC',sets:'3',reps:'15 each'},{name:'DB walking lunges',sets:'3',reps:'12 each side'},{name:'DB renegade rows',sets:'3',reps:'20'},{name:'Wall balls (above comp weight)',sets:'3',reps:'25'}]},
+{id:'w10s6',date:'2026-08-07',type:'rest',name:'W10 Fri — REST',fuel:'🥗 Normal meals.',notes:buildNotes(null,'Rest day.',null,null,false,false,true,false),exercises:[]},
+{id:'w10s7',date:'2026-08-08',type:'hyrox',name:'W10 Sat — Hyrox Session or Group Class',fuel:'⚡ Carb meal 2 hrs before. Electrolytes throughout. RPE 8-10.',notes:buildNotes('5 min easy run · Mobility & drills','400m Run · 20m Sled Push (comp weight) · 400m Run × 2, rest 90s\n400m Run · 20m Sled Pull (comp weight) · 400m Run × 2, rest 90s\n400m Run · 15 Burpee Broad Jumps · 400m Run × 2, rest 90s\n400m Run · 100m Farmers Carry · 400m Run × 2, rest 90s\nOR attend Group Hyrox class','hyrox_sat',null,false,false,false,true),exercises:[{name:'Sled push (comp) + 400m runs',sets:'2',reps:'20m · rest 90s'},{name:'Sled pull (comp) + 400m runs',sets:'2',reps:'20m · rest 90s'},{name:'Burpee broad jumps + 400m runs',sets:'2',reps:'15 · rest 90s'},{name:'Farmers carry + 400m runs',sets:'2',reps:'100m · rest 90s'}]},
+{id:'w10s8',date:'2026-08-09',type:'run',name:'W10 Sun — 90 Min Easy Run',fuel:'💧 Electrolytes. 1 gel at 60 min.',notes:buildNotes('Mobility & drills','RPE 3/10 — Easy zone 2\n90 min easy run','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 11 TAPER (Aug 10–16) ──
+{id:'w11s1',date:'2026-08-10',type:'gym',name:'W11 Mon — Strength (Taper)',fuel:'🍌 Light snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — Taper week, maintain intensity reduce volume\n3×10 DB Bulgarian lunges each side (rest 2 min)\n3×15 Lat pulldown (rest 90s)\n3×15 Barbell hip thrust (rest 2 min)\n3×15 DB push press (rest 90s)\n3×15 Toes to bar / knees to chest / captains chairs (rest 90s)','deload_strength',null,false,true,false,false),exercises:[{name:'DB Bulgarian lunges',sets:'3',reps:'10 each side'},{name:'Lat pulldown',sets:'3',reps:'15'},{name:'Barbell hip thrust',sets:'3',reps:'15'},{name:'DB push press',sets:'3',reps:'15'},{name:'Toes to bar / knees to chest / captains chairs',sets:'3',reps:'15'}]},
+{id:'w11s2',date:'2026-08-11',type:'gym',name:'W11 Tue AM — Speed Ergs',fuel:'💧 Electrolytes. Sharp efforts.',notes:buildNotes('5 min easy ski · 5 min easy row · Mobility & drills','RPE 7-8 — Hold same pace for each rep\n500m Ski HARD × 4 sets, rest 2 min between sets\n500m Row HARD × 4 sets, rest 2 min between sets','speed_ergs',null,false,false,false,false),exercises:[{name:'SkiErg',sets:'4',reps:'500m hard — rest 2 min'},{name:'Row',sets:'4',reps:'500m hard — rest 2 min'}]},
+{id:'w11s3',date:'2026-08-11',type:'run',name:'W11 Tue PM — Optional Easy Run',fuel:'💧 Water only.',notes:buildNotes('Mobility & drills','RPE 3/10 — Optional, easy zone 2\n30 min easy run','running',null,true,false,false,false),exercises:[]},
+{id:'w11s4',date:'2026-08-12',type:'run',name:'W11 Wed — Intervals (Taper)',fuel:'🍌 Light snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','RPE 7-9 — Reduced taper volume\n4 × 800m above race pace · 90s rest\n4 × 400m · 90s rest','running',null,true,false,false,false),exercises:[]},
+{id:'w11s5',date:'2026-08-13',type:'gym',name:'W11 Thu — Strength (Taper)',fuel:'🍌 Light snack before. Protein after.',notes:buildNotes('5 min bike · 30s side plank × 2 · 15 banded glute bridge × 2 · 10 deadbugs each side × 2','RPE 7-8 — Taper, reduced volume\n3×15 Barbell bench press (rest 2 min)\n3×15 Sumo deadlift (rest 2 min)\n3×20 DB renegade rows (rest 90s)\n3×10 DB step ups each side (rest 90s)\n3×10 Toes to bar / knees to chest / captains chairs (rest 90s)','deload_strength',null,false,true,false,false),exercises:[{name:'Barbell bench press',sets:'3',reps:'15'},{name:'Sumo deadlift',sets:'3',reps:'15'},{name:'DB renegade rows',sets:'3',reps:'20'},{name:'DB step ups',sets:'3',reps:'10 each side'},{name:'Toes to bar / knees to chest',sets:'3',reps:'10'}]},
+{id:'w11s6',date:'2026-08-14',type:'rest',name:'W11 Fri — REST',fuel:'🥗 Start increasing carbs slightly today.',notes:buildNotes(null,'Rest day. Start increasing carbs slightly today.',null,null,false,false,true,false),exercises:[]},
+{id:'w11s7',date:'2026-08-15',type:'hyrox',name:'W11 Sat — Hyrox Session or Group Class',fuel:'⚡ Carb meal 2 hrs before. Electrolytes throughout. RPE 8-10.',notes:buildNotes('5 min easy run · Mobility & drills','500m Run · 20m Sled Push (comp weight) · 10 Burpee Broad Jumps × 2, rest 90s\n500m Run · 20m Sled Pull (comp weight) · 100m Farmers Carry × 2, rest 90s\n500m Run · 20 Walking Lunges (comp weight) · 20 Wall Balls × 2, rest 90s\nOR attend Group Hyrox class','hyrox_sat',null,false,false,false,true),exercises:[{name:'Sled push + 10 BBJ + 500m runs',sets:'2',reps:'rest 90s'},{name:'Sled pull + 100m farmers carry + 500m runs',sets:'2',reps:'rest 90s'},{name:'20 walking lunges + 20 wall balls + 500m runs',sets:'2',reps:'rest 90s'}]},
+{id:'w11s8',date:'2026-08-16',type:'run',name:'W11 Sun — 45 Min Easy Run',fuel:'💧 Water only.',notes:buildNotes('Mobility & drills','RPE 3/10 — Easy zone 2, short and sharp — legs fresh\n45 min easy run','running',null,true,false,false,false),exercises:[]},
+
+// ── WEEK 12 RACE WEEK (Aug 17–23) ──
+{id:'w12s1',date:'2026-08-17',type:'gym',name:'W12 Mon — Light Workout',fuel:'💧 Water only. 70% effort.',notes:buildNotes('5 min walk + mobility','70% effort — not too hard\n2 min Row · 20 bodyweight squats · 10 pushups · rest 30s\n2 min Ski · 10 alt V-snaps each side · 10 lunges each side · rest 30s\nRepeat 3 times','race_light',null,false,false,false,false),exercises:[{name:'Row',sets:'3',reps:'2 min'},{name:'Bodyweight squats',sets:'3',reps:'20'},{name:'Pushups',sets:'3',reps:'10'},{name:'SkiErg',sets:'3',reps:'2 min'},{name:'Alt V-snaps',sets:'3',reps:'10 each side'},{name:'Lunges',sets:'3',reps:'10 each side'}]},
+{id:'w12s2',date:'2026-08-18',type:'run',name:'W12 Tue — 30 Min Easy Run',fuel:'💧 Water only.',notes:buildNotes('5 min walk · Mobility & drills','RPE 3/10 — Easy zone 2\n30 min easy run','running',null,true,false,false,false),exercises:[]},
+{id:'w12s3',date:'2026-08-19',type:'run',name:'W12 Wed — Short Intervals',fuel:'🍌 Light snack before. Water during.',notes:buildNotes('10 min walk · Mobility & drills','~80% effort — not max\n4 × 400m above race pace · 90s rest','running',null,true,false,false,false),exercises:[]},
+{id:'w12s4',date:'2026-08-20',type:'rest',name:'W12 Thu — REST',fuel:'🍝 Carb load starts today — pasta, rice, oats. Hydrate well. No alcohol.',notes:buildNotes(null,'Rest day — walk, yoga, stretch. Lay out kit. Visualise the race.\n\n' + FOAM_ROLL,null,null,false,false,false,false),exercises:[]},
+{id:'w12s5',date:'2026-08-21',type:'run',name:'W12 Fri — 10-15 Min Shake Out Run',fuel:'💧 Water only.',notes:buildNotes('Drills & mobility','RPE 3/10 — Very easy, just keep legs moving\n10-15 min easy shake out run','running',null,true,false,false,false),exercises:[]},
+{id:'w12s6',date:'2026-08-22',type:'rest',name:'W12 Sat — REST',fuel:'🍝 Continue carb loading. Light on fibre and fat. No alcohol.',notes:'Rest. Sleep well. Eat your carb meals. Hydrate. Visualise the race.',exercises:[]},
+{id:'w12s7',date:'2026-08-23',type:'race',name:'HYROX SOLO — RACE DAY 🏁 Aug 23',fuel:'🏁 Carb breakfast 2–2.5 hrs before (oats, toast, banana). 1 gel 10 min before start. 1 gel at station 5 (row). Electrolyte drink to sip at every transition. NOTHING new today.',notes:"THE HARD WORK IS DONE — LET'S FREAKING GO!\nWarm up 10-15 min easy · mobility & drills\nPace the 1km runs — do not go out too hard\nSteady on wall balls — find your rhythm\nTrust your training",exercises:[]},
+
+// ── HALF MARATHON PHASE (Aug 24 – Oct 12) ──
+{id:'hm1',date:'2026-08-27',type:'rest',name:'Post-Hyrox Recovery',fuel:'🥗 Eat whatever — you earned it. Focus on protein and real food. Hydrate well.',notes:'Easy walks only this week. You earned this.\n\n' + FOAM_ROLL,exercises:[]},
+{id:'hm2',date:'2026-09-02',type:'gym',name:'Half Marathon — Run Support Strength',fuel:'💧 Water only. Protein within 30 min after.',notes:'Single-leg RDL 3×10 · Step-ups 3×12 · Hip thrust 4×12 · Copenhagen plank 3×20s · Calf + tibialis raises 3×20\n\n' + KNEE_FORM,exercises:[{name:'Single-leg RDL',sets:'3',reps:'10/leg'},{name:'Step-ups',sets:'3',reps:'12/leg'},{name:'Hip thrust',sets:'4',reps:'12'},{name:'Copenhagen plank',sets:'3',reps:'20s/side'},{name:'Calf raises',sets:'3',reps:'20'},{name:'Tibialis raises',sets:'3',reps:'20'}]},
+{id:'hm3',date:'2026-09-07',type:'gym',name:'Half Marathon — Aerobic Cross-Train',fuel:'💧 Water or light electrolytes — zone 2 only.',notes:'30–40 min easy row or SkiErg zone 2. Active recovery for legs.',exercises:[{name:'Row or SkiErg',sets:'1',reps:'35 min zone 2'}]},
+{id:'hm4',date:'2026-09-14',type:'gym',name:'Half Marathon — Run Support Strength',fuel:'💧 Water only. Protein after.',notes:'Single-leg RDL · Step-ups · Hip thrust · Core. Legs only.\n\n' + KNEE_FORM,exercises:[{name:'Single-leg RDL',sets:'3',reps:'10/leg'},{name:'Step-ups',sets:'3',reps:'12/leg'},{name:'Hip thrust',sets:'4',reps:'12'},{name:'Core circuit',sets:'3',reps:'3 exercises'}]},
+{id:'hm5',date:'2026-09-21',type:'gym',name:'Half Marathon — Hyrox Maintenance Circuit',fuel:'🍌 Banana before. Water during.',notes:'3 rounds: 500m row · 20 wall balls · 30m sandbag lunge. Keeps Hyrox fitness alive.',exercises:[{name:'Row',sets:'3',reps:'500m'},{name:'Wall balls',sets:'3',reps:'20 @ 6kg'},{name:'Sandbag lunges',sets:'3',reps:'30m'}]},
+{id:'hm6',date:'2026-09-28',type:'gym',name:'Half Marathon — Taper Strength',fuel:'💧 Water only — very light session.',notes:'Light session. 2 sets per exercise. No fatigue.',exercises:[{name:'Single-leg RDL',sets:'2',reps:'10/leg'},{name:'Hip thrust',sets:'2',reps:'12'},{name:'Calf raises',sets:'2',reps:'20'}]},
+{id:'hm7',date:'2026-10-06',type:'rest',name:'Half Marathon Race Week — Activation',fuel:'🍝 Carb load from Wednesday. Cut fibre and heavy fats from Friday. Hydrate daily. No alcohol.',notes:'20 min easy jog Tuesday. Mobility. Visualise. Sleep and eat well.\n\n' + FOAM_ROLL,exercises:[]},
+{id:'hm8',date:'2026-10-12',type:'race',name:'PERTH HALF MARATHON 🏁',fuel:'🏁 Carb breakfast 2–2.5 hrs before. Gel at 45 min + gel at 1:30 if needed. Sip water at every aid station from the start.',notes:"Race day! Trust the training. Run your pace. You've got this.",exercises:[]},
+];
+
+// ── PHASES ────────────────────────────────────────────────────────────────
+const PHASES = [
+  {id:'p1',name:'Weeks 1–4 — Base Build',dates:'Jun 1 – Jun 28',start:'2026-06-01',end:'2026-06-28',color:'var(--run)',badge:'Base build',badge2:'Deload wk 4',badge3:'50% Hyrox sim'},
+  {id:'p2',name:'Weeks 5–8 — Strength + Hyrox',dates:'Jun 29 – Jul 26',start:'2026-06-29',end:'2026-07-26',color:'var(--gym)',badge:'Brick sessions',badge2:'Hyrox sims',badge3:'Deload wk 8'},
+  {id:'p3',name:'Weeks 9–10 — Peak',dates:'Jul 27 – Aug 9',start:'2026-07-27',end:'2026-08-09',color:'var(--hyrox)',badge:'Peak load',badge2:'Speed ergs',badge3:'90 min runs'},
+  {id:'p4',name:'Weeks 11–12 — Taper + Race',dates:'Aug 10 – Aug 23',start:'2026-08-10',end:'2026-08-23',color:'var(--hyrox)',badge:'Taper',badge2:'Race week',badge3:'Hyrox Aug 23'},
+  {id:'p5',name:'Half Marathon',dates:'Aug 24 – Oct 12',start:'2026-08-24',end:'2026-10-12',color:'var(--race)',badge:'Run focus',badge2:'Runna program',badge3:'Perth Oct 12'},
+];
+
+const RACES = [
+  {label:'Hyrox Solo',date:'2026-08-23',color:'#FB923C'},
+  {label:'Perth Half Marathon',date:'2026-10-12',color:'#E879F9'},
+];
+
+const TYPE_META = {
+  gym:    {color:'#60A5FA',bg:'rgba(96,165,250,0.1)',label:'Gym'},
+  run:    {color:'#4ADE80',bg:'rgba(74,222,128,0.1)',label:'Run'},
+  hyrox:  {color:'#FB923C',bg:'rgba(251,146,60,0.1)',label:'Hyrox'},
+  race:   {color:'#E879F9',bg:'rgba(232,121,249,0.12)',label:'Race'},
+  pilates:{color:'#F472B6',bg:'rgba(244,114,182,0.1)',label:'Pilates'},
+  rest:   {color:'#5A5754',bg:'rgba(255,255,255,0.03)',label:'Rest'},
+};
+
+// ── SUPABASE ──────────────────────────────────────────────────────────────
+const SB_URL = 'https://lqyczipgwitvvdldpfcm.supabase.co';
+const SB_KEY = 'sb_publishable_NW4meAW_l_w9N0k0S3VrPw_pNkkJQKV';
+const SB_HDR = { 'Content-Type':'application/json', 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY, 'Prefer':'return=minimal' };
+
+async function sbGet(table, id) {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { headers:{...SB_HDR,'Prefer':''} });
+    const rows = await res.json();
+    return rows.length ? JSON.parse(rows[0].data) : null;
+  } catch(e) { return null; }
+}
+
+async function sbSet(table, id, data) {
+  try {
+    await fetch(`${SB_URL}/rest/v1/${table}`, { method:'POST', headers:{...SB_HDR,'Prefer':'resolution=merge-duplicates'}, body:JSON.stringify({id, data:JSON.stringify(data)}) });
+  } catch(e) { console.error('sbSet failed:', e); }
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let sessions  = JSON.parse(JSON.stringify(DEFAULT_SESSIONS));
+let reviews   = [];
+let runs      = [];
+let personal  = {}; // weights, notes, done — keyed by session id
+let openCards = {};
+let selectedFeel = '';
+
+// ── SAVE — only personal data goes to Supabase, never sessions ────────────
+async function save() {
+  await Promise.all([
+    sbSet('runs',     'courtney', runs),
+    sbSet('reviews',  'courtney', reviews),
+    sbSet('personal', 'courtney', personal),
+  ]);
+}
+
+// ── INIT — sessions always from file, personal data from Supabase ─────────
+function init() {
+  sessions = JSON.parse(JSON.stringify(DEFAULT_SESSIONS));
+  renderCountdowns();
+  renderTabs();
+  renderActivePhase(); // show immediately from file
+  loadCloud();         // then merge personal data in background
+}
+
+async function loadCloud() {
+  const [savedRuns, savedReviews, savedPersonal] = await Promise.all([
+    sbGet('runs',     'courtney'),
+    sbGet('reviews',  'courtney'),
+    sbGet('personal', 'courtney'),
+  ]);
+  if (savedRuns)      runs     = savedRuns;
+  if (savedReviews)   reviews  = savedReviews;
+  if (savedPersonal)  personal = savedPersonal;
+  // Merge personal overrides into sessions
+  sessions = sessions.map(s => {
+    const o = personal[s.id];
+    if (!o) return s;
+    return { ...s,
+      done:      o.done      !== undefined ? o.done      : s.done,
+      notes:     o.notes     !== undefined ? o.notes     : s.notes,
+      duration:  o.duration  !== undefined ? o.duration  : s.duration,
+      hr:        o.hr        !== undefined ? o.hr        : s.hr,
+      exercises: o.exercises !== undefined ? o.exercises : s.exercises,
+    };
+  });
+  renderActivePhase();
+}
+
+// ── COUNTDOWNS ────────────────────────────────────────────────────────────
+function renderCountdowns() {
+  const now = new Date();
+  document.getElementById('countdowns').innerHTML = RACES.map(r => {
+    const diff = Math.ceil((new Date(r.date) - now) / 86400000);
+    const gone = diff < 0;
+    return `<div class="countdown-card">
+      <div class="cd-days" style="color:${r.color}">${gone ? '✓' : diff}</div>
+      <div class="cd-label">${gone ? 'completed' : 'days to go'}</div>
+      <div class="cd-race" style="color:${r.color}">${r.label}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────
+let activePhase = 'p1';
+
+function renderTabs() {
+  const allTabs = [...PHASES, {id:'runs',name:'🏃 Runs log'}];
+  document.getElementById('phaseTabs').innerHTML = allTabs.map(p =>
+    `<button class="ptab ${activePhase===p.id?'active':''}" onclick="switchPhase('${p.id}')">${p.name}</button>`
+  ).join('');
+}
+
+function switchPhase(id) {
+  activePhase = id;
+  renderTabs();
+  if (id === 'runs') renderRunsLog();
+  else renderActivePhase();
+}
+
+// ── MAIN RENDER ───────────────────────────────────────────────────────────
+function renderActivePhase() {
+  const phase = PHASES.find(p => p.id === activePhase);
+  if (!phase) return;
+  const phaseSessions = sessions.filter(s => s.date >= phase.start && s.date <= phase.end).sort((a,b) => a.date.localeCompare(b.date));
+
+  const weeks = {};
+  phaseSessions.forEach(s => {
+    const d = new Date(s.date);
+    const mon = getMonday(d);
+    const key = mon.toISOString().slice(0,10);
+    if (!weeks[key]) weeks[key] = [];
+    weeks[key].push(s);
+  });
+
+  const badgeHTML = [phase.badge, phase.badge2, phase.badge3].filter(Boolean)
+    .map(b => `<span class="badge" style="color:${phase.color};border-color:${phase.color}22;background:${phase.color}11">${b}</span>`).join('');
+
+  let html = `<div class="phase-info">
+    <div class="phase-info-left"><h2>${phase.name}</h2><p>${phase.dates}</p></div>
+    <div class="phase-badges">${badgeHTML}</div>
+  </div>`;
+
+  const weekKeys = Object.keys(weeks).sort();
+  if (weekKeys.length === 0) {
+    html += `<p style="color:var(--muted);font-size:0.8rem;padding:2rem 0">No sessions in this phase yet.</p>`;
+  }
+
+  weekKeys.forEach((wk, wi) => {
+    const wkDate = new Date(wk);
+    const wkEnd = new Date(wk); wkEnd.setDate(wkEnd.getDate() + 6);
+    const wkSessions = weeks[wk];
+    const doneCount = wkSessions.filter(s => s.done).length;
+    const isOpen = openCards[`wk-${wk}`] !== false;
+    html += `<div class="week-block">
+      <div class="week-header" onclick="toggleWeek('${wk}')">
+        <div class="week-header-left">
+          <span class="week-title">Week ${wi+1}</span>
+          <span class="week-dates">${fmt(wkDate)} – ${fmt(wkEnd)}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:0.62rem;color:var(--muted2)">${doneCount}/${wkSessions.length} done</span>
+          <span style="font-size:0.65rem;color:var(--muted);transition:transform 0.2s;${isOpen?'transform:rotate(90deg)':''}">▶</span>
+        </div>
+      </div>
+      <div class="week-sessions ${isOpen?'':'collapsed'}" id="ws-${wk}">
+        ${wkSessions.map(s => renderSessionCard(s)).join('')}
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function renderSessionCard(s) {
+  const m = TYPE_META[s.type] || TYPE_META.rest;
+  const isOpen = openCards[s.id];
+  const isDone = s.done;
+  const exRows = (s.exercises || []).map((ex, i) =>
+    `<div class="exercise-row">
+      <input value="${ex.name||''}" placeholder="Exercise name" onchange="updateEx('${s.id}',${i},'name',this.value)">
+      <input value="${ex.sets||''}" placeholder="Sets" onchange="updateEx('${s.id}',${i},'sets',this.value)">
+      <input value="${ex.reps||''}" placeholder="Reps / weight" onchange="updateEx('${s.id}',${i},'reps',this.value)">
+      <button class="ex-del" onclick="delEx('${s.id}',${i})">✕</button>
+    </div>`).join('');
+
+  const fuelDisplay = s.fuel ? `<div class="fuel-box"><strong>⚡ Fuelling</strong>${s.fuel.replace(/[💧🍌⚡🏁🍝🥗]/g,'').trim()}</div>` : '';
+
+  // Parse stretch items from notes — lines starting with ·
+  const stretchTicks = personal[s.id]?.stretchTicks || {};
+  const notes = s.notes || '';
+  const lines = notes.split('\n');
+  let inStretch = false;
+  let stretchItems = [];
+  let mainNotes = [];
+  lines.forEach(line => {
+    if (line.includes('STRETCH PROTOCOL') || line.includes('RIGHT KNEE CARE') || line.includes('FOAM ROLL PROTOCOL')) {
+      inStretch = true;
+    }
+    if (inStretch && line.trim().startsWith('·')) {
+      stretchItems.push(line.trim().slice(1).trim());
+    } else if (!inStretch) {
+      mainNotes.push(line);
+    }
+  });
+
+  const stretchHTML = stretchItems.length > 0 ? `
+    <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+      <div style="font-size:0.6rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        <span>🧘 Stretch + Roll Protocol</span>
+        <button onclick="clearStretches('${s.id}')" style="font-size:0.58rem;background:transparent;border:none;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:3px">reset</button>
+      </div>
+      ${stretchItems.map((item, i) => {
+        const key = `${s.id}_str_${i}`;
+        const checked = stretchTicks[i] || false;
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+          <input type="checkbox" id="${key}" ${checked?'checked':''} onchange="toggleStretch('${s.id}',${i},this.checked)" style="margin-top:2px;accent-color:var(--run);flex-shrink:0;cursor:pointer">
+          <label for="${key}" style="font-size:0.72rem;color:${checked?'var(--muted)':'var(--text)'};cursor:pointer;text-decoration:${checked?'line-through':'none'};line-height:1.4">${item}</label>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  return `<div class="session-card ${isDone?'done':''}" id="card-${s.id}">
+    <div class="session-top" onclick="toggleCard('${s.id}')">
+      <div class="session-type-dot" style="background:${m.color}"></div>
+      <div class="session-title">${s.name}</div>
+      <div class="session-date">${fmtFull(new Date(s.date))}</div>
+      <span class="session-status ${isDone?'done':'pending'}">${isDone?'✓ done':'pending'}</span>
+      <span class="session-expand-btn ${isOpen?'open':''}">▾</span>
+    </div>
+    <div class="session-detail ${isOpen?'open':''}" id="detail-${s.id}">
+      <div class="detail-grid three">
+        <div class="field-group"><label class="field-label">Date</label><input class="field-input" type="date" value="${s.date}" onchange="updateField('${s.id}','date',this.value)"></div>
+        <div class="field-group"><label class="field-label">Duration</label><input class="field-input" type="text" value="${s.duration||''}" placeholder="e.g. 55 min" onchange="updateField('${s.id}','duration',this.value)"></div>
+        <div class="field-group"><label class="field-label">Avg HR / RPE</label><input class="field-input" type="text" value="${s.hr||''}" placeholder="e.g. 158bpm / RPE 7" onchange="updateField('${s.id}','hr',this.value)"></div>
+      </div>
+      <div class="exercises-section">
+        <span class="exercises-label">Exercises — sets · reps / weight</span>
+        <div style="display:grid;grid-template-columns:1fr 80px 80px 28px;gap:5px;margin-bottom:5px">
+          <span style="font-size:0.58rem;color:var(--muted);padding-left:8px">Exercise</span>
+          <span style="font-size:0.58rem;color:var(--muted)">Sets</span>
+          <span style="font-size:0.58rem;color:var(--muted)">Reps / wt</span>
+          <span></span>
+        </div>
+        <div id="exlist-${s.id}">${exRows}</div>
+        <button class="add-exercise-btn" onclick="addEx('${s.id}')">+ add exercise</button>
+      </div>
+      <textarea class="notes-area" placeholder="Session notes, how it felt, PBs, adjustments..." onchange="updateField('${s.id}','notes',this.value)">${s.notes||''}</textarea>
+      ${fuelDisplay}
+      ${stretchHTML}
+      <div class="session-actions">
+        <button class="save-btn" onclick="saveCard('${s.id}')">Save</button>
+        <button class="mark-done-btn ${isDone?'undo':''}" onclick="toggleDone('${s.id}')">${isDone?'Mark undone':'Mark done'}</button>
+        <button class="btn" style="margin-left:auto;font-size:0.68rem;color:#f87171;border-color:rgba(248,113,113,0.2);background:rgba(248,113,113,0.05)" onclick="deleteSession('${s.id}')">Delete</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── INTERACTIONS ──────────────────────────────────────────────────────────
+function toggleCard(id) { openCards[id] = !openCards[id]; renderActivePhase(); }
+function toggleWeek(wk) { openCards[`wk-${wk}`] = openCards[`wk-${wk}`] === false ? true : false; renderActivePhase(); }
+
+function updateField(id, field, val) {
+  const s = sessions.find(x => x.id === id);
+  if (s) {
+    s[field] = val;
+    if (!personal[id]) personal[id] = {};
+    personal[id][field] = val;
+    save();
+  }
+}
+
+function updateEx(id, idx, field, val) {
+  const s = sessions.find(x => x.id === id);
+  if (s && s.exercises[idx]) {
+    s.exercises[idx][field] = val;
+    if (!personal[id]) personal[id] = {};
+    personal[id].exercises = JSON.parse(JSON.stringify(s.exercises));
+    save();
+  }
+}
+
+function addEx(id) {
+  const s = sessions.find(x => x.id === id);
+  if (s) {
+    if (!s.exercises) s.exercises = [];
+    s.exercises.push({name:'',sets:'',reps:''});
+    if (!personal[id]) personal[id] = {};
+    personal[id].exercises = JSON.parse(JSON.stringify(s.exercises));
+    save(); renderActivePhase();
+  }
+}
+
+function delEx(id, idx) {
+  const s = sessions.find(x => x.id === id);
+  if (s) {
+    s.exercises.splice(idx, 1);
+    if (!personal[id]) personal[id] = {};
+    personal[id].exercises = JSON.parse(JSON.stringify(s.exercises));
+    save(); renderActivePhase();
+  }
+}
+
+function saveCard(id) { save(); showToast('Session saved ✓'); }
+
+function toggleStretch(id, idx, checked) {
+  if (!personal[id]) personal[id] = {};
+  if (!personal[id].stretchTicks) personal[id].stretchTicks = {};
+  personal[id].stretchTicks[idx] = checked;
+  save();
+  // Update label style without full re-render
+  const label = document.querySelector(`label[for="${id}_str_${idx}"]`);
+  if (label) { label.style.color = checked ? 'var(--muted)' : 'var(--text)'; label.style.textDecoration = checked ? 'line-through' : 'none'; }
+}
+
+function clearStretches(id) {
+  if (personal[id]) { personal[id].stretchTicks = {}; save(); renderActivePhase(); }
+}
+
+function toggleDone(id) {
+  const s = sessions.find(x => x.id === id);
+  if (s) {
+    s.done = !s.done;
+    if (!personal[id]) personal[id] = {};
+    personal[id].done = s.done;
+    save(); renderActivePhase();
+  }
+}
+
+function deleteSession(id) { if (!confirm('Delete this session?')) return; sessions = sessions.filter(x => x.id !== id); save(); renderActivePhase(); }
+
+function openAddSession() { document.getElementById('newDate').value = new Date().toISOString().slice(0,10); document.getElementById('newName').value = ''; document.getElementById('newNotes').value = ''; document.getElementById('addModal').classList.add('open'); }
+function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
+function saveNewSession() {
+  const date = document.getElementById('newDate').value;
+  const type = document.getElementById('newType').value;
+  const name = document.getElementById('newName').value.trim() || 'New session';
+  const notes = document.getElementById('newNotes').value.trim();
+  sessions.push({id:'u'+Date.now(), date, type, name, notes, exercises:[], done:false});
+  save(); closeAddModal();
+  const phase = PHASES.find(p => date >= p.start && date <= p.end);
+  if (phase) { activePhase = phase.id; renderTabs(); }
+  renderActivePhase(); showToast('Session added ✓');
+}
+
+function openReviewModal() { document.getElementById('reviewModal').classList.add('open'); }
+function closeReviewModal() { document.getElementById('reviewModal').classList.remove('open'); }
+function saveReview() {
+  reviews.push({phase:activePhase, date:new Date().toISOString().slice(0,10), well:document.getElementById('reviewWell').value, improve:document.getElementById('reviewImprove').value, adjust:document.getElementById('reviewAdjust').value, feeling:document.getElementById('reviewFeeling').value});
+  save(); closeReviewModal(); renderActivePhase(); showToast('Review saved ✓');
+}
+
+// ── RUNS LOG ──────────────────────────────────────────────────────────────
+function renderRunsLog() {
+  const totalKm = runs.reduce((a,r) => a + (parseFloat(r.dist)||0), 0);
+  const longestRun = runs.reduce((a,r) => Math.max(a, parseFloat(r.dist)||0), 0);
+  const lastPace = runs.filter(r => r.pace).slice(-1)[0]?.pace || '—';
+  const sorted = [...runs].sort((a,b) => b.date.localeCompare(a.date));
+
+  const runCards = sorted.length === 0
+    ? `<div class="empty-runs"><span>🏃</span>No runs logged yet — tap "+ Log a run" to add your first one.</div>`
+    : sorted.map(r => {
+        const isOpen = openCards['run-'+r.id];
+        return `<div class="run-card">
+          <div class="run-card-top" onclick="toggleRunCard('${r.id}')">
+            <div class="run-dot"></div>
+            <div class="run-name">${r.name||'Run'}</div>
+            <div class="run-meta">
+              ${r.dist?`<span class="run-chip">${r.dist}km</span>`:''}
+              ${r.time?`<span class="run-chip" style="background:rgba(96,165,250,0.1);color:var(--gym)">${r.time}</span>`:''}
+              ${r.feel?`<span style="font-size:0.72rem">${r.feel.split(' ')[0]}</span>`:''}
+              <span class="run-date-lbl">${fmtFull(new Date(r.date))}</span>
+            </div>
+            <span class="run-expand ${isOpen?'open':''}">▾</span>
+          </div>
+          <div class="run-detail ${isOpen?'open':''}">
+            <div class="run-grid">
+              <div class="field-group"><label class="field-label">Distance (km)</label><input class="field-input" value="${r.dist||''}" placeholder="km" onchange="updateRun('${r.id}','dist',this.value)"></div>
+              <div class="field-group"><label class="field-label">Time</label><input class="field-input" value="${r.time||''}" placeholder="mm:ss" onchange="updateRun('${r.id}','time',this.value)"></div>
+              <div class="field-group"><label class="field-label">Avg pace /km</label><input class="field-input" value="${r.pace||''}" placeholder="m:ss" onchange="updateRun('${r.id}','pace',this.value)"></div>
+            </div>
+            <div class="run-grid-2">
+              <div class="field-group"><label class="field-label">Avg HR (bpm)</label><input class="field-input" value="${r.hr||''}" placeholder="bpm" onchange="updateRun('${r.id}','hr',this.value)"></div>
+              <div class="field-group"><label class="field-label">Elevation (m)</label><input class="field-input" value="${r.elev||''}" placeholder="m" onchange="updateRun('${r.id}','elev',this.value)"></div>
+            </div>
+            <div class="field-group" style="margin-bottom:8px"><label class="field-label">Route / location</label><input class="field-input" value="${r.route||''}" placeholder="Where did you run?" onchange="updateRun('${r.id}','route',this.value)"></div>
+            <div class="field-group" style="margin-bottom:8px"><label class="field-label">Fuelling used</label><input class="field-input" value="${r.fuel||''}" placeholder="e.g. 1 gel at 45 min..." onchange="updateRun('${r.id}','fuel',this.value)"></div>
+            <div class="field-group" style="margin-bottom:8px"><label class="field-label">How did it feel?</label>
+              <div class="feel-btns">
+                ${['😴 Dead legs','😐 Average','🙂 Good','💪 Strong','🔥 Flew'].map(f =>
+                  `<button class="feel-btn ${r.feel===f?'selected':''}" onclick="updateRunFeel('${r.id}','${f}',this)">${f}</button>`
+                ).join('')}
+              </div>
+            </div>
+            <textarea class="notes-area" placeholder="Notes..." onchange="updateRun('${r.id}','notes',this.value)">${r.notes||''}</textarea>
+            <div class="run-actions">
+              <button class="save-btn" onclick="saveRun2('${r.id}')">Save</button>
+              <button class="btn" style="margin-left:auto;font-size:0.68rem;color:#f87171;border-color:rgba(248,113,113,0.2);background:rgba(248,113,113,0.05)" onclick="deleteRun('${r.id}')">Delete</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('mainContent').innerHTML = `<div class="runs-log">
+    <div class="runs-header">
+      <div><h2>Runs log</h2><p style="font-size:0.72rem;color:var(--muted2);margin-top:3px">All your runs — Runna sessions, easy runs, races</p></div>
+      <button class="btn" style="background:var(--run-bg);border-color:rgba(74,222,128,0.3);color:var(--run)" onclick="openLogRun()">+ Log a run</button>
+    </div>
+    <div class="run-stats-row">
+      <div class="run-stat"><div class="run-stat-val">${runs.length}</div><div class="run-stat-label">Total runs</div></div>
+      <div class="run-stat"><div class="run-stat-val">${totalKm.toFixed(1)}</div><div class="run-stat-label">Total km</div></div>
+      <div class="run-stat"><div class="run-stat-val">${longestRun>0?longestRun.toFixed(1):'—'}</div><div class="run-stat-label">Longest (km)</div></div>
+      <div class="run-stat"><div class="run-stat-val" style="font-size:1rem">${lastPace}</div><div class="run-stat-label">Last pace /km</div></div>
+    </div>
+    ${runCards}
+  </div>`;
+}
+
+function toggleRunCard(id) { openCards['run-'+id] = !openCards['run-'+id]; renderRunsLog(); }
+function updateRun(id, field, val) { const r = runs.find(x => x.id === id); if (r) { r[field] = val; save(); } }
+function updateRunFeel(id, feel, btn) { const r = runs.find(x => x.id === id); if (r) { r.feel = feel; save(); } btn.closest('.feel-btns').querySelectorAll('.feel-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); }
+function saveRun2(id) { save(); showToast('Run saved ✓'); }
+function deleteRun(id) { if (!confirm('Delete this run?')) return; runs = runs.filter(x => x.id !== id); save(); renderRunsLog(); }
+
+function openLogRun() {
+  selectedFeel = '';
+  document.getElementById('runDate').value = new Date().toISOString().slice(0,10);
+  ['runName','runDist','runTime','runPace','runHR','runElev','runRoute','runNotes','runFuel'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('#feelBtns .feel-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('logRunModal').classList.add('open');
+}
+function closeLogRun() { document.getElementById('logRunModal').classList.remove('open'); }
+function selectFeel(btn, feel) { selectedFeel = feel; document.querySelectorAll('#feelBtns .feel-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); }
+function saveRun() {
+  const date = document.getElementById('runDate').value;
+  if (!date) { alert('Please add a date'); return; }
+  runs.push({id:'r'+Date.now(), date, name:document.getElementById('runName').value.trim()||'Run', dist:document.getElementById('runDist').value.trim(), time:document.getElementById('runTime').value.trim(), pace:document.getElementById('runPace').value.trim(), hr:document.getElementById('runHR').value.trim(), elev:document.getElementById('runElev').value.trim(), route:document.getElementById('runRoute').value.trim(), fuel:document.getElementById('runFuel').value.trim(), feel:selectedFeel, notes:document.getElementById('runNotes').value.trim()});
+  save(); closeLogRun(); renderRunsLog(); showToast('Run logged ✓');
+}
+
+// ── EXPORT / IMPORT ───────────────────────────────────────────────────────
+function exportData() {
+  const data = {version:2, exportedAt:new Date().toISOString(), personal, reviews, runs};
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'courtney-training-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported ✓');
+}
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.runs) { alert('Invalid backup file.'); return; }
+      if (!confirm('Import backup? This will replace your current data.')) return;
+      personal  = data.personal  || {};
+      reviews   = data.reviews   || [];
+      runs      = data.runs      || [];
+      sessions  = JSON.parse(JSON.stringify(DEFAULT_SESSIONS)).map(s => {
+        const o = personal[s.id];
+        if (o) return {...s, ...o};
+        return s;
+      });
+      save(); renderTabs(); renderActivePhase(); showToast('Data restored ✓');
+    } catch { alert('Could not read backup file.'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function getMonday(d) { const day = d.getDay(); const diff = d.getDate() - day + (day === 0 ? -6 : 1); return new Date(d.setDate(diff)); }
+function fmt(d) { return d.toLocaleDateString('en-AU', {day:'numeric',month:'short'}); }
+function fmtFull(d) { return d.toLocaleDateString('en-AU', {weekday:'short',day:'numeric',month:'short'}); }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+init();
+</script>
+</body>
+</html>
