@@ -803,9 +803,9 @@ function renderSessionCard(s) {
 
     const iStyle = (color, border) => `background:var(--s3);border:1px solid ${border};border-radius:4px;padding:5px 8px;font-size:0.72rem;color:${color};font-family:'Instrument Sans',sans-serif;width:100%;`;
 
-    const distField = needsDist ? `<input value="${savedDist}" placeholder="${distPlaceholder}" onchange="updateDist('${s.id}',${i},'${exKey}',this.value)" style="${iStyle(distColor,distBorder)}font-weight:${savedDist?'500':'400'};" title="${isRun?'Distance run (km)':'Distance covered in this time'}">` : '';
+    const distField = needsDist ? `<input value="${savedDist}" placeholder="${distPlaceholder}" oninput="updateDist('${s.id}',${i},'${exKey}',this.value)" style="${iStyle(distColor,distBorder)}font-weight:${savedDist?'500':'400'};" title="${isRun?'Distance run (km)':'Distance covered in this time'}">` : '';
 
-    const weightField = !isRun ? `<input value="${savedWeight}" placeholder="${showWtHint?'↑ '+lastWeight:'kg'}" onchange="updateWeight('${s.id}',${i},'${exKey}',this.value)" style="${iStyle(weightColor,weightBorder)}font-weight:${savedWeight?'500':'400'};" title="Weight used">` : '';
+    const weightField = !isRun ? `<input value="${savedWeight}" placeholder="${showWtHint?'↑ '+lastWeight:'kg'}" oninput="updateWeight('${s.id}',${i},'${exKey}',this.value)" style="${iStyle(weightColor,weightBorder)}font-weight:${savedWeight?'500':'400'};" title="Weight used">` : '';
 
     // Grid: exercise | sets | reps | [weight or dist] | [dist if time-based non-run] | del
     const extraCols = isRun ? ' 65px' : needsDist ? ' 65px 65px' : ' 65px';
@@ -995,9 +995,15 @@ function updateWeight(id, idx, exKey, val) {
   if (!personal[id].weights) personal[id].weights = {};
   if (!personal[id].manualWeights) personal[id].manualWeights = {};
   personal[id].weights[idx] = val.trim();
-  personal[id].manualWeights[idx] = true; // mark as manually entered — turns green
+  personal[id].manualWeights[idx] = true;
 
-  // Save to weight memory and pre-fill future sessions
+  // Immediately turn green on the input element
+  const inputEl = document.querySelector(`[oninput="updateWeight('${id}',${idx},'${exKey}',this.value)"]`);
+  if (inputEl) {
+    inputEl.style.color = val.trim() ? '#4ADE80' : 'var(--text)';
+    inputEl.style.borderColor = val.trim() ? 'var(--border)' : 'var(--border)';
+  }
+
   if (val.trim() && exKey) {
     if (!personal['_weights']) personal['_weights'] = {};
     personal['_weights'][exKey] = val.trim();
@@ -1011,7 +1017,6 @@ function updateWeight(id, idx, exKey, val) {
               if (!personal[future.id]) personal[future.id] = {};
               if (!personal[future.id].weights) personal[future.id].weights = {};
               personal[future.id].weights[i] = val.trim();
-              // Future sessions are auto-filled — no manualWeights flag
             }
           }
         });
@@ -1028,9 +1033,14 @@ function updateDist(id, idx, exKey, val) {
   if (!personal[id].distances) personal[id].distances = {};
   if (!personal[id].manualDists) personal[id].manualDists = {};
   personal[id].distances[idx] = val.trim();
-  personal[id].manualDists[idx] = true; // mark as manually entered — turns green
+  personal[id].manualDists[idx] = true;
 
-  // Save to distance memory and pre-fill future sessions
+  // Immediately turn green on the input element
+  const inputEl = document.querySelector(`[oninput="updateDist('${id}',${idx},'${exKey}',this.value)"]`);
+  if (inputEl) {
+    inputEl.style.color = val.trim() ? '#4ADE80' : 'var(--text)';
+  }
+
   if (val.trim() && exKey) {
     if (!personal['_distances']) personal['_distances'] = {};
     personal['_distances'][exKey] = val.trim();
@@ -1044,7 +1054,6 @@ function updateDist(id, idx, exKey, val) {
               if (!personal[futureSession.id]) personal[futureSession.id] = {};
               if (!personal[futureSession.id].distances) personal[futureSession.id].distances = {};
               personal[futureSession.id].distances[i] = val.trim();
-              // Future sessions are auto-filled — no manualDists flag
             }
           }
         });
