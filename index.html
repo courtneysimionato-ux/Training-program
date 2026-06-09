@@ -782,22 +782,24 @@ function renderSessionCard(s) {
     const isTimeBased = /\d+\s*min/i.test(ex.reps||'');
 
     // Distance column — for runs and time-based exercises
-    const needsDist   = isRun || isTimeBased;
-    const savedDist   = personal[s.id]?.distances?.[i] || '';
-    const lastDist    = distMemory[exKey];
-    const isAutoDist  = lastDist && savedDist === lastDist;
-    const showDistHint= lastDist && !savedDist;
-    const distColor   = isAutoDist ? '#FBBF24' : (savedDist ? '#4ADE80' : 'var(--text)');
-    const distBorder  = isAutoDist ? 'rgba(251,191,36,0.3)' : showDistHint ? 'rgba(251,146,60,0.4)' : 'var(--border)';
+    const needsDist    = isRun || isTimeBased;
+    const savedDist    = personal[s.id]?.distances?.[i] || '';
+    const lastDist     = distMemory[exKey];
+    const isManualDist = !!(personal[s.id]?.manualDists?.[i]);
+    const isAutoDist   = savedDist && !isManualDist;
+    const showDistHint = lastDist && !savedDist;
+    const distColor    = isAutoDist ? '#FBBF24' : (savedDist ? '#4ADE80' : 'var(--text)');
+    const distBorder   = isAutoDist ? 'rgba(251,191,36,0.3)' : showDistHint ? 'rgba(251,146,60,0.4)' : 'var(--border)';
     const distPlaceholder = isRun ? (showDistHint ? '↑ '+lastDist : 'km') : (showDistHint ? '↑ '+lastDist : 'dist (m)');
 
     // Weight column — only for non-run exercises
-    const savedWeight  = personal[s.id]?.weights?.[i] || ex.weight || '';
-    const lastWeight   = weightMemory[exKey];
-    const isAutoWeight = lastWeight && savedWeight === lastWeight;
-    const showWtHint   = lastWeight && !savedWeight && exKey;
-    const weightColor  = isAutoWeight ? '#FBBF24' : (savedWeight ? '#4ADE80' : 'var(--text)');
-    const weightBorder = isAutoWeight ? 'rgba(251,191,36,0.3)' : showWtHint ? 'rgba(251,191,36,0.4)' : 'var(--border)';
+    const savedWeight    = personal[s.id]?.weights?.[i] || ex.weight || '';
+    const lastWeight     = weightMemory[exKey];
+    const isManualWeight = !!(personal[s.id]?.manualWeights?.[i]);
+    const isAutoWeight   = savedWeight && !isManualWeight;
+    const showWtHint     = lastWeight && !savedWeight && exKey;
+    const weightColor    = isAutoWeight ? '#FBBF24' : (savedWeight ? '#4ADE80' : 'var(--text)');
+    const weightBorder   = isAutoWeight ? 'rgba(251,191,36,0.3)' : showWtHint ? 'rgba(251,191,36,0.4)' : 'var(--border)';
 
     const iStyle = (color, border) => `background:var(--s3);border:1px solid ${border};border-radius:4px;padding:5px 8px;font-size:0.72rem;color:${color};font-family:'Instrument Sans',sans-serif;width:100%;`;
 
@@ -991,14 +993,14 @@ function updateWeight(id, idx, exKey, val) {
   if (!s) return;
   if (!personal[id]) personal[id] = {};
   if (!personal[id].weights) personal[id].weights = {};
+  if (!personal[id].manualWeights) personal[id].manualWeights = {};
   personal[id].weights[idx] = val.trim();
+  personal[id].manualWeights[idx] = true; // mark as manually entered — turns green
 
-  // Save to weight memory
+  // Save to weight memory and pre-fill future sessions
   if (val.trim() && exKey) {
     if (!personal['_weights']) personal['_weights'] = {};
     personal['_weights'][exKey] = val.trim();
-
-    // Pre-fill same exercise in future sessions
     sessions.forEach(future => {
       if (future.date > s.date) {
         (future.exercises||[]).forEach((ex, i) => {
@@ -1009,6 +1011,7 @@ function updateWeight(id, idx, exKey, val) {
               if (!personal[future.id]) personal[future.id] = {};
               if (!personal[future.id].weights) personal[future.id].weights = {};
               personal[future.id].weights[i] = val.trim();
+              // Future sessions are auto-filled — no manualWeights flag
             }
           }
         });
@@ -1023,24 +1026,25 @@ function updateDist(id, idx, exKey, val) {
   if (!s) return;
   if (!personal[id]) personal[id] = {};
   if (!personal[id].distances) personal[id].distances = {};
+  if (!personal[id].manualDists) personal[id].manualDists = {};
   personal[id].distances[idx] = val.trim();
+  personal[id].manualDists[idx] = true; // mark as manually entered — turns green
 
-  // Save to distance memory keyed by exercise name
+  // Save to distance memory and pre-fill future sessions
   if (val.trim() && exKey) {
     if (!personal['_distances']) personal['_distances'] = {};
     personal['_distances'][exKey] = val.trim();
-
-    // Pre-fill same time-based exercise in future sessions
     sessions.forEach(futureSession => {
       if (futureSession.date > s.date) {
-        futureSession.exercises && futureSession.exercises.forEach((ex, i) => {
-          if (ex.name.trim().toLowerCase() === exKey && /\d+\s*min/i.test(ex.reps||'')) {
+        (futureSession.exercises||[]).forEach((ex, i) => {
+          if (ex.name.trim().toLowerCase() === exKey) {
             const fp = personal[futureSession.id];
             const alreadySet = fp && fp.distances && fp.distances[i];
             if (!alreadySet) {
               if (!personal[futureSession.id]) personal[futureSession.id] = {};
               if (!personal[futureSession.id].distances) personal[futureSession.id].distances = {};
               personal[futureSession.id].distances[i] = val.trim();
+              // Future sessions are auto-filled — no manualDists flag
             }
           }
         });
