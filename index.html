@@ -769,13 +769,57 @@ function renderSessionCard(s) {
   const m = TYPE_META[s.type] || TYPE_META.rest;
   const isOpen = openCards[s.id];
   const isDone = s.done;
-  const exRows = (s.exercises || []).map((ex, i) =>
-    `<div class="exercise-row">
-      <input value="${ex.name||''}" placeholder="Exercise name" onchange="updateEx('${s.id}',${i},'name',this.value)">
-      <input value="${ex.sets||''}" placeholder="Sets" onchange="updateEx('${s.id}',${i},'sets',this.value)">
-      <input value="${ex.reps||''}" placeholder="Reps / weight" onchange="updateEx('${s.id}',${i},'reps',this.value)">
+  const weightMemory = personal['_weights'] || {};
+  const distMemory   = personal['_distances'] || {};
+
+  const exRows = (s.exercises || []).map((ex, i) => {
+    const exKey = (ex.name||'').trim().toLowerCase();
+    const lastWeight   = weightMemory[exKey];
+    // Auto-populated weight = has value from memory but user hasn't manually changed it
+    const isAutoWeight = lastWeight && ex.reps === lastWeight;
+    const showHint     = lastWeight && !ex.reps && exKey;
+
+    // Check if this is a time-based exercise (has "min" in reps)
+    const isTimeBased  = /\d+\s*min/i.test(ex.reps||'');
+    const savedDist    = personal[s.id]?.distances?.[i] || '';
+    const lastDist     = distMemory[exKey];
+    const isAutoDist   = lastDist && savedDist === lastDist;
+    const showDistHint = lastDist && !savedDist;
+
+    // Colour logic:
+    // Auto-populated weight → amber text (carried forward from last session)
+    // Manually entered weight → green text (you typed it this session)
+    // Auto-populated dist → amber text
+    // Manually entered dist → green text
+    const weightColor = isAutoWeight ? '#FBBF24' : (ex.reps && !showHint ? '#4ADE80' : 'var(--text)');
+    const weightBorder = showHint ? 'rgba(251,191,36,0.4)' : isAutoWeight ? 'rgba(251,191,36,0.3)' : 'var(--border)';
+    const distColor  = isAutoDist ? '#FBBF24' : (savedDist ? '#4ADE80' : 'var(--text)');
+    const distBorder = showDistHint ? 'rgba(251,146,60,0.4)' : isAutoDist ? 'rgba(251,191,36,0.3)' : 'var(--border)';
+
+    const distField = isTimeBased ? `
+      <input value="${savedDist}" placeholder="${showDistHint ? '↑ '+lastDist : 'dist (m)'}"
+        onchange="updateDist('${s.id}',${i},'${exKey}',this.value)"
+        style="background:var(--s3);border:1px solid ${distBorder};border-radius:4px;padding:5px 8px;font-size:0.72rem;color:${distColor};font-family:'Instrument Sans',sans-serif;width:100%;font-weight:${savedDist?'500':'400'};"
+        title="Enter distance covered in this time (e.g. 1250m)">` : '';
+
+    return `<div style="display:grid;grid-template-columns:1fr 60px ${isTimeBased?'90px 70px':'90px'} 28px;gap:5px;margin-bottom:5px;align-items:center;">
+      <input value="${ex.name||''}" placeholder="Exercise name" onchange="updateEx('${s.id}',${i},'name',this.value)" style="background:var(--s3);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:0.72rem;color:var(--text);font-family:'Instrument Sans',sans-serif;width:100%;">
+      <input value="${ex.sets||''}" placeholder="Sets" onchange="updateEx('${s.id}',${i},'sets',this.value)" style="background:var(--s3);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:0.72rem;color:var(--text);font-family:'Instrument Sans',sans-serif;width:100%;">
+      <input value="${ex.reps||''}" placeholder="${showHint ? '↑ '+lastWeight : 'Reps / time'}" onchange="updateEx('${s.id}',${i},'reps',this.value)" style="background:var(--s3);border:1px solid ${weightBorder};border-radius:4px;padding:5px 8px;font-size:0.72rem;color:${weightColor};font-family:'Instrument Sans',sans-serif;width:100%;font-weight:${ex.reps?'500':'400'};">
+      ${distField}
       <button class="ex-del" onclick="delEx('${s.id}',${i})">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+
+  // Build column headers dynamically
+  const hasTimeBased = (s.exercises||[]).some(ex => /\d+\s*min/i.test(ex.reps||''));
+  const exHeader = `<div style="display:grid;grid-template-columns:1fr 60px ${hasTimeBased?'90px 70px':'90px'} 28px;gap:5px;margin-bottom:5px">
+    <span style="font-size:0.58rem;color:var(--muted);padding-left:8px">Exercise</span>
+    <span style="font-size:0.58rem;color:var(--muted)">Sets</span>
+    <span style="font-size:0.58rem;color:var(--muted)">Reps / time</span>
+    ${hasTimeBased ? '<span style="font-size:0.58rem;color:var(--hyrox)">Dist (m) 📈</span>' : ''}
+    <span></span>
+  </div>`;
 
   const fuelDisplay = s.fuel ? `<div class="fuel-box"><strong>⚡ Fuelling</strong>${s.fuel.replace(/[💧🍌⚡🏁🍝🥗]/g,'').trim()}</div>` : '';
 
@@ -829,12 +873,11 @@ function renderSessionCard(s) {
       </div>
       <div class="exercises-section">
         <span class="exercises-label">Exercises — sets · reps / weight</span>
-        <div style="display:grid;grid-template-columns:1fr 80px 80px 28px;gap:5px;margin-bottom:5px">
-          <span style="font-size:0.58rem;color:var(--muted);padding-left:8px">Exercise</span>
-          <span style="font-size:0.58rem;color:var(--muted)">Sets</span>
-          <span style="font-size:0.58rem;color:var(--muted)">Reps / wt</span>
-          <span></span>
+        <div style="display:flex;gap:12px;margin-bottom:6px">
+          <span style="font-size:0.58rem;color:#FBBF24">■ auto-filled from last session</span>
+          <span style="font-size:0.58rem;color:#4ADE80">■ entered this session</span>
         </div>
+        ${exHeader}
         <div id="exlist-${s.id}">${exRows}</div>
         <button class="add-exercise-btn" onclick="addEx('${s.id}')">+ add exercise</button>
       </div>
@@ -870,6 +913,33 @@ function updateEx(id, idx, field, val) {
     s.exercises[idx][field] = val;
     if (!personal[id]) personal[id] = {};
     personal[id].exercises = JSON.parse(JSON.stringify(s.exercises));
+
+    // If updating reps/weight field, save to exercise weight memory
+    if (field === 'reps' && val.trim()) {
+      const exName = s.exercises[idx].name.trim().toLowerCase();
+      if (exName) {
+        if (!personal['_weights']) personal['_weights'] = {};
+        personal['_weights'][exName] = val.trim();
+        // Pre-fill same exercise in future sessions that haven't been touched yet
+        sessions.forEach(futureSession => {
+          if (futureSession.date > s.date) {
+            futureSession.exercises && futureSession.exercises.forEach((ex, i) => {
+              if (ex.name.trim().toLowerCase() === exName) {
+                // Only pre-fill if this exercise hasn't been manually set in personal data
+                const fp = personal[futureSession.id];
+                const alreadySet = fp && fp.exercises && fp.exercises[i] && fp.exercises[i].reps && fp.exercises[i].reps !== ex.reps;
+                if (!alreadySet) {
+                  ex.reps = val.trim();
+                  if (!personal[futureSession.id]) personal[futureSession.id] = {};
+                  if (!personal[futureSession.id].exercises) personal[futureSession.id].exercises = JSON.parse(JSON.stringify(futureSession.exercises));
+                  personal[futureSession.id].exercises[i].reps = val.trim();
+                }
+              }
+            });
+          }
+        });
+      }
+    }
     save();
   }
 }
@@ -896,6 +966,39 @@ function delEx(id, idx) {
 }
 
 function saveCard(id) { save(); showToast('Session saved ✓'); }
+
+function updateDist(id, idx, exKey, val) {
+  const s = sessions.find(x => x.id === id);
+  if (!s) return;
+  if (!personal[id]) personal[id] = {};
+  if (!personal[id].distances) personal[id].distances = {};
+  personal[id].distances[idx] = val.trim();
+
+  // Save to distance memory keyed by exercise name
+  if (val.trim() && exKey) {
+    if (!personal['_distances']) personal['_distances'] = {};
+    personal['_distances'][exKey] = val.trim();
+
+    // Pre-fill same time-based exercise in future sessions
+    sessions.forEach(futureSession => {
+      if (futureSession.date > s.date) {
+        futureSession.exercises && futureSession.exercises.forEach((ex, i) => {
+          if (ex.name.trim().toLowerCase() === exKey && /\d+\s*min/i.test(ex.reps||'')) {
+            const fp = personal[futureSession.id];
+            const alreadySet = fp && fp.distances && fp.distances[i];
+            if (!alreadySet) {
+              if (!personal[futureSession.id]) personal[futureSession.id] = {};
+              if (!personal[futureSession.id].distances) personal[futureSession.id].distances = {};
+              personal[futureSession.id].distances[i] = val.trim();
+            }
+          }
+        });
+      }
+    });
+  }
+  save();
+  showToast('Distance saved ✓');
+}
 
 function toggleStretch(id, idx, checked) {
   if (!personal[id]) personal[id] = {};
